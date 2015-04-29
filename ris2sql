@@ -24,8 +24,8 @@ class RISParser:
     # We expect each of these fields to appear only once for a given citation
     core_map = {
         'AB': 'abstract',
-        'DA': 'date',
-        'DP': 'database_pub',
+        'DA': 'pub_date',
+        'DP': 'pub_database',
         'SP': 'start_page',
         'EP': 'end_page',
         'LA': 'language',
@@ -34,7 +34,7 @@ class RISParser:
         'M3': 'work_type',
         'PB': 'publisher',
         'PY': 'pub_year',
-        'TY': 'type', # type of the citation
+        'TY': 'doc_type', # type of the cited document
         'TI': 'title',
         'T2': 'title2',
         'T3': 'title3',
@@ -45,7 +45,7 @@ class RISParser:
         'L2': 'local_url',
         'SN': 'isbn_issn',
         'ET': 'edition',
-        'M1': 'number',
+        'M1': 'id_number',
         'IS': 'issue_number',
         'VL': 'volume',
         'Y2': 'access_date'
@@ -61,10 +61,15 @@ class RISParser:
 
     skip_keys = ('L1', 'L4')
 
-    def __init__(self):
+    def __init__(self, ris_f="cawls.ris", core_f="core.sql", authors="authors.sql", kw_f="keywords.sql"):
         self.rec = 0
         self.core = {}
         self.init_core()
+        self.ris_f = open(ris_f, "r")
+        self.core_f = open(core_f, "w")
+        self.authors_f = open(authors, "w")
+        self.kw_f = open(kw_f, "w")
+        self.sql_header()
 
     def init_core(self):
         self.authors = [] 
@@ -75,6 +80,26 @@ class RISParser:
         for v in RISParser.core_map.values():
             self.core[v] = None
 
+    def sql_header(self):
+        self.sql_header_build('ris_core', self.core_map, self.core_f)
+        self.sql_header_build('ris_authors', self.author_map, self.authors_f)
+
+    def sql_header_build(self, table, kv_map, sql_f):
+        sql = "CREATE TABLE %s(" % (table)
+        for key in sorted(kv_map.keys()):
+            sql = sql + "%s TEXT, " % (kv_map[key])
+        sql = sql[0:-1] + ");\n"
+
+        sql = sql + "COPY %s (" % (table)
+        for key in sorted(kv_map.keys()):
+            sql = sql + "%s, " % (kv_map[key])
+        sql = sql[0:-1] + ") FROM STDIN;\n"
+        sql_f.write(sql)
+
+    def close_sql(self):
+        for f in (self.core_f, self.authors_f, self.kw_f):
+            f.write("\\.\n")
+
     def parse(self, line):
         if len(line) == 1:
             pass
@@ -83,27 +108,33 @@ class RISParser:
         elif line[2:6] == '  - ':
             self.store()
             self.lastkey = line[0:2]
-            self.lastval = line[6:-1]
+            self.lastval = line[6:].strip()
         else:
-            self.lastval = self.lastval.join(("\n", line[0:-1]))
+            self.lastval = "\\n".join((self.lastval, line[0:].strip()))
 
     def printem(self):
-        self.print_core()
-        self.print_authors()
-        self.print_keywords()
+        self.write_core()
+        self.write_authors()
+        self.write_keywords()
         self.init_core()
         self.rec += 1
 
-    def print_core(self):
-        print(self.rec, self.core['type'], self.core['title'], self.core['title2'], self.core['title3'])
+    def write_core(self):
+        self.core_f.write("%d" % (self.rec))
+        for key in sorted(self.core.keys()):
+            val = self.core[key]
+            if not val:
+                val = "\\N"
+            self.core_f.write("\t%s" % (val))
+        self.core_f.write("\n")
         
-    def print_authors(self):
+    def write_authors(self):
         for x, y in self.authors:
-            print(self.rec, "AUTHOR", x, y)
+            self.authors_f.write("%d\t%s\t%s\n" % (self.rec, x, y))
 
-    def print_keywords(self):
+    def write_keywords(self):
         for x in self.keywords:
-            print(self.rec, "KEYWORD", x)
+            self.kw_f.write("%d\t%s\n" % (self.rec, x))
 
     def store(self):
         if self.lastkey in RISParser.core_map:
@@ -120,10 +151,11 @@ class RISParser:
             print("Undefined key: ", self.lastkey)
 
     def parsefile(self):
-        with open("cawls.ris", "r") as f:
+        with self.ris_f as f:
             for line in f:
                 self.parse(line)
+        self.close_sql()
 
 if __name__ == "__main__":
-    foo = RISParser()
+    foo = RISParser(ris_f="cawls.ris", core_f="core.sql", authors="authors.sql", kw_f="keywords.sql")
     foo.parsefile()
