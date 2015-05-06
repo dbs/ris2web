@@ -134,8 +134,8 @@ class RISParser:
 
     def write_core(self):
         self.core_f.write("%d" % (self.rec))
-        for key in sorted(self.core.keys()):
-            val = self.core[key]
+        for key in sorted(self.core_map.keys()):
+            val = self.core[self.core_map[key]]
             if not val:
                 val = "\\N"
             val = val.replace('\t', ' ')
