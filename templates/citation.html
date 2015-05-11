@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Citation: {{ record.title|escape }}</title>
+</head>
+<body vocab="http://schema.org/" typeof="{{ record.schema_type }}">
+<h1>Citation: <span property="name">{{ record.title|escape }}</span></h1>
+{%- if record.authors|length > 1 %}
+<h2>Authors</h2>
+{%- elif record.authors|length == 1 %}
+<h2>Author</h2>
+{%- endif %}
+{%- for author in record.authors %} 
+<div class="author" property="author" typeof="Person">
+    <span property="name">{{ author.name }}</span>
+</div>
+{%- endfor %}
+</body>
+</html>

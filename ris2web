@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+"Converts a database of RIS into HTML"
+
+from flask import Flask, abort, request, render_template
+from os.path import abspath, dirname
+import psycopg2
+
+app = Flask(__name__)
+app.root_path = abspath(dirname(__file__))
+app.url_base = '/'
+
+class Author:
+    "Models an author"
+
+    def __init__(self, record):
+        "Init the author"
+        self.id = record[0]
+        self.author_type = record[1]
+        self.name = record[2]
+        self.uri = record[3]
+
+class RIS:
+    "Models a RIS record"
+    
+    def __init__(self, record, authors):
+        "Init the RIS record"
+        self.id = record[0]
+        self.abstract = record[1]
+        self.call_number = record[2]
+        self.pub_place = record[3]
+        self.pub_date = record[4]
+        self.doi = record[5]
+        self.pub_database = record[6]
+        self.end_page = record[7]
+        self.edition = record[8]
+        self.issue_number = record[9]
+        self.alternate_title = record[10]
+        self.local_url = record[11]
+        self.language = record[12]
+        self.id_number = record[13]
+        self.work_type = record[14]
+        self.publisher = record[15]
+        self.pub_year = record[16]
+        self.isbn_issn = record[17]
+        self.start_page = record[18]
+        self.short_title = record[19]
+        self.title2 = record[20]
+        self.title3 = record[21]
+        self.title = record[22]
+        self.doc_type = record[23]
+        self.url = record[24]
+        self.volume = record[25]
+        self.access_date = record[26]
+        self.init_authors(authors)
+        self.get_schema_type()
+
+    def init_authors(self, authors):
+        "Init the authors"
+        self.authors = []
+        for a in authors:
+            author = Author(a)
+            self.authors.append(author)
+
+    def get_schema_type(self):
+        """
+        Get the schema.org type mapped from RIS reference type
+
+        See http://en.wikipedia.org/wiki/RIS_%28file_format%29#Type_of_reference
+        """
+        if self.doc_type == 'JOUR':
+            self.schema_type = 'ScholarlyArticle'
+        elif self.doc_type == 'CHAP':
+            self.schema_type = 'Book'
+        elif self.doc_type == 'BOOK':
+            self.schema_type = 'Book'
+        elif self.doc_type == 'THES':
+            self.schema_type = 'ScholarlyArticle'
+        elif self.doc_type == 'RPRT':
+            self.schema_type = 'Article'
+        elif self.doc_type == 'MGZN':
+            self.schema_type = 'Article'
+        elif self.doc_type == 'BLOG':
+            self.schema_type = 'BlogPosting'
+        elif self.doc_type == 'MPCT':
+            self.schema_type = 'Movie'
+        elif self.doc_type == 'ELEC':
+            self.schema_type = 'WebPage'
+        elif self.doc_type == 'CASE':
+            self.schema_type = 'CreativeWork'
+        elif self.doc_type == 'MAP':
+            self.schema_type = 'Map'
+        else:
+            self.schema_type = 'CreativeWork'
+
+def get_db():
+    """
+    Get a database connection
+
+    With a host attribute in the mix, you could connect to a remote
+    database, but then you would have to set up .pgpass or add a
+    password parameter, so let's keep it simple.
+    """
+
+    db_name = "refstats"
+    db_user = "refstats"
+    try:
+        conn = psycopg2.connect(
+            database=db_name,
+            user=db_user
+        )
+    except Exception as e:
+        print(e)
+
+    return conn
+
+@app.route(app.url_base + '<int:work_id>', methods=['GET', 'POST'])
+def show_citation(work_id=None):
+    "Show the specified work"
+    if work_id:
+        return citation_html(work_id)
+    else:
+        return home_html()
+
+def citation_html(work_id):
+    "Show a single citation"
+    try:
+        conn = get_db()
+        works = conn.cursor()
+        authors = conn.cursor()
+        works.execute("SELECT id, abstract, call_number, pub_place, \
+                pub_date, doi, pub_database, end_page, edition, issue_number, \
+                alternate_title, local_url, language, id_number, work_type, \
+                publisher, pub_year, isbn_issn, start_page, short_title, \
+                title2, title3, title, doc_type, url, volume, access_date \
+            FROM ris_core \
+            WHERE id = %s", (work_id,))
+        record = works.fetchone()
+        authors.execute("SELECT id, author_type, author_name, uri FROM ris_authors WHERE citation = %s ORDER BY id ASC", (record[0],))
+        r = RIS(record, authors)
+        return render_template('citation.html', record=r)
+    except Exception as e:
+        print(e)
+        return abort(500)
+
+def home_html():
+    "Home page"
+    pass
+
+if __name__ == '__main__':
+    app.run()
