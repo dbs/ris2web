@@ -69,18 +69,25 @@ class RIS:
         """
         if self.doc_type == 'JOUR':
             self.schema_type = 'ScholarlyArticle'
+            self.pub_venue = 'Periodical'
         elif self.doc_type == 'CHAP':
             self.schema_type = 'Book'
+            self.pub_venue = 'Book'
         elif self.doc_type == 'BOOK':
             self.schema_type = 'Book'
+            self.pub_venue = 'Book'
         elif self.doc_type == 'THES':
             self.schema_type = 'ScholarlyArticle'
+            self.pub_venue = 'Periodical'
         elif self.doc_type == 'RPRT':
             self.schema_type = 'Article'
+            self.pub_venue = 'Periodical'
         elif self.doc_type == 'MGZN':
             self.schema_type = 'Article'
+            self.pub_venue = 'Periodical'
         elif self.doc_type == 'BLOG':
             self.schema_type = 'BlogPosting'
+            self.pub_venue = 'Blog'
         elif self.doc_type == 'MPCT':
             self.schema_type = 'Movie'
         elif self.doc_type == 'ELEC':
