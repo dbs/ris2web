@@ -22,13 +22,14 @@ class Author:
 class RIS:
     "Models a RIS record"
     
-    def __init__(self, record, authors):
+    def __init__(self, record, authors, kw):
         "Init the RIS record"
         self.id = record[0]
         self.abstract = record[1]
         self.call_number = record[2]
         self.pub_place = record[3]
         self.pub_date = record[4]
+        self.pub_date_human = risdate2human(record[4])
         self.doi = record[5]
         self.pub_database = record[6]
         self.end_page = record[7]
@@ -52,6 +53,7 @@ class RIS:
         self.volume = record[25]
         self.access_date = record[26]
         self.init_authors(authors)
+        self.kw = kw
         self.get_schema_type()
 
     def init_authors(self, authors):
@@ -70,32 +72,43 @@ class RIS:
         if self.doc_type == 'JOUR':
             self.schema_type = 'ScholarlyArticle'
             self.pub_venue = 'Periodical'
+            self.doc_type_human = 'Article'
         elif self.doc_type == 'CHAP':
             self.schema_type = 'Book'
             self.pub_venue = 'Book'
+            self.doc_type_human = 'Book chapter'
         elif self.doc_type == 'BOOK':
             self.schema_type = 'Book'
             self.pub_venue = 'Book'
+            self.doc_type_human = 'Book'
         elif self.doc_type == 'THES':
             self.schema_type = 'ScholarlyArticle'
             self.pub_venue = 'Periodical'
+            self.doc_type_human = 'Thesis'
         elif self.doc_type == 'RPRT':
             self.schema_type = 'Article'
             self.pub_venue = 'Periodical'
+            self.doc_type_human = 'Report'
         elif self.doc_type == 'MGZN':
             self.schema_type = 'Article'
             self.pub_venue = 'Periodical'
+            self.doc_type_human = 'Article'
         elif self.doc_type == 'BLOG':
             self.schema_type = 'BlogPosting'
             self.pub_venue = 'Blog'
+            self.doc_type_human = 'Blog post'
         elif self.doc_type == 'MPCT':
             self.schema_type = 'Movie'
+            self.doc_type_human = 'Movie'
         elif self.doc_type == 'ELEC':
             self.schema_type = 'WebPage'
+            self.doc_type_human = 'Web page'
         elif self.doc_type == 'CASE':
             self.schema_type = 'CreativeWork'
+            self.doc_type_human = 'Case study'
         elif self.doc_type == 'MAP':
             self.schema_type = 'Map'
+            self.doc_type_human = 'Map'
         else:
             self.schema_type = 'CreativeWork'
 
@@ -134,6 +147,7 @@ def citation_html(work_id):
         conn = get_db()
         works = conn.cursor()
         authors = conn.cursor()
+        kw = conn.cursor()
         works.execute("SELECT id, abstract, call_number, pub_place, \
                 pub_date, doi, pub_database, end_page, edition, issue_number, \
                 alternate_title, local_url, language, id_number, work_type, \
@@ -143,11 +157,20 @@ def citation_html(work_id):
             WHERE id = %s", (work_id,))
         record = works.fetchone()
         authors.execute("SELECT id, author_type, author_name, uri FROM ris_authors WHERE citation = %s ORDER BY id ASC", (record[0],))
-        r = RIS(record, authors)
+        kw.execute("SELECT keywords FROM ris_keywords WHERE citation = %s ORDER BY keywords", (record[0],))
+        r = RIS(record, authors, kw.fetchall())
         return render_template('citation.html', record=r)
     except Exception as e:
         print(e)
         return abort(500)
+
+def risdate2human(date):
+    "Turn a RIS date <YYYY>/<MM>/<DD>/<other> into human-friendly"
+
+    if not date:
+        return None
+    return date.replace('/', ' ')
+
 
 def home_html():
     "Home page"

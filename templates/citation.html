@@ -2,7 +2,11 @@
 <html>
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Citation: {{ record.title|escape }}</title>
+<style>
+tbody th { text-align: left; }
+</style>
 </head>
 <body vocab="http://schema.org/" typeof="{{ record.schema_type }}" {%
   if record.uri -%}
@@ -10,42 +14,97 @@
 {% else -%}
     resource="#"
 {%- endif %}>
-<h1>Citation: <span property="name">{{ record.title|escape }}</span></h1>
-{%- if record.authors|length > 1 %}
-<h2>Authors</h2>
-{%- elif record.authors|length == 1 %}
-<h2>Author</h2>
+<h1 property="name">{{ record.title|escape }}</h1>
+<table>
+<tbody>
+{%- if record.doc_type_human %}
+<tr>
+  <th>Document type</th>
+  <td>{{ record.doc_type_human|escape}}</td>
+</tr>
 {%- endif %}
+{%- if record.authors|length > 0 %}
 {%- for author in record.authors %} 
-<div class="author" property="author" typeof="Person">
-    <span property="name">{{ author.name|escape }}</span>
-</div>
+<tr>
+  <th>Author</th>
+  <td class="author">
+  <span property="author" typeof="Person">
+      <span property="name">{{ author.name|escape }}</span>
+  </span>
+  </td>
+</tr>
 {%- endfor %}
-{%- if record.pub_venue %}
-<div property="isPartOf" typeof="{{ record.pub_venue }}" >Published in:
-    <span property="name">{{ record.title2|escape }}</span>
-    {%- if record.publisher %}
-    <span property="publisher" typeof="Organization">
+{%- endif %}
+{%- if record.pub_venue == "Periodical" and record.doc_type != "RPRT" %}
+<tr property="isPartOf" typeof="{{ record.pub_venue }}" resource="#pub_venue">
+  <th>Journal</th>
+  <td><span property="name">{{ record.title2|escape }}</span></td>
+</tr>
+{%- endif %}
+{%- if record.pub_venue == "Book" and record.doc_type != "RPRT" %}
+<tr property="isPartOf" typeof="{{ record.pub_venue }}" resource="#pub_venue">
+  <th>Book</th>
+  <td><span property="name">{{ record.title2|escape }}</span></td>
+</tr>
+{%- endif %}
+{%- if record.publisher %}
+<tr>
+  <th>Publisher</th>
+  <td><span property="publisher" typeof="Organization" resource="#pub_venue">
         <span property="name">{{ record.publisher }}</span>
         {%- if record.pub_place %}
         <span property="address location">{{ record.pub_place }}</span>
         {%- endif %}
     </span>
-    {%- endif %}
-    {%- if record.pub_date %}
-    <span property="datePublished">{{ record.pub_date }}</span>
-    {%- endif %}
-    {%- if record.isbn_issn and record.pub_venue == 'Book' %}
-    <span property="isbn">ISBN: {{ record.isbn_issn|escape }}</span>
-    {%- elif record.isbn_issn and record.pub_venue == 'Periodical' %}
-    <span property="issn">ISSN: {{ record.isbn_issn|escape }}</span>
-    {%- endif %}
-</div>
+  </td>
+</tr>
+{%- endif %}
+{%- if record.pub_date_human %}
+<tr>
+  <th>Date</th>
+  <td property="datePublished">{{ record.pub_date_human|escape }}</td>
+</tr>
+{%- endif %}
+{%- if record.isbn_issn and record.pub_venue == 'Book' %}
+<tr>
+  <th>ISBN</th>
+  <td property="isbn">{{ record.isbn_issn|escape }}</td>
+</tr>
+{%- elif record.isbn_issn and record.pub_venue == 'Periodical' %}
+<tr>
+  <th>ISSN</th>
+  <td property="issn">ISSN: {{ record.isbn_issn|escape }}</td>
+</tr>
 {%- endif %}
 {%- if record.abstract %}
-<div class="abstract">Abstract:
-    <span property="description">{{ record.abstract|escape }}</span>
-</div>
+<tr>
+  <th>Abstract:</th>
+  <td class="abstract" property="description">{{ record.abstract|escape }}</td>
+</tr>
 {%- endif %}
+{%- if record.start_page and record.end_page %}
+<tr>
+  <th>Pages</th>
+  <td property="pagination"><span property="pageStart">{{ record.start_page|escape }}</span>-<span property="pageEnd">{{ record.end_page|escape }}</span></td>
+</tr>
+{%- endif %}
+{%- if record.url %}
+<tr>
+  <th>URL</th>
+  <td><a href="{{ record.url|escape }}" property="url">{{ record.url|escape }}</a></td>
+</tr>
+{%- endif %}
+{%- if record.kw%}
+<tr>
+  <th>Keywords</th>
+  <td>
+  {%- for kw in record.kw %} 
+    <span property="about">{{ kw.0|escape }}</span>{% if loop.revindex0 %}, {% endif %}
+  {%- endfor%}
+  </td>
+</tr>
+{%- endif %}
+</tbody>
+</table>
 </body>
 </html>
