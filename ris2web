@@ -74,7 +74,7 @@ class RIS:
             self.pub_venue = 'Periodical'
             self.doc_type_human = 'Article'
         elif self.doc_type == 'CHAP':
-            self.schema_type = 'Book'
+            self.schema_type = 'Article'
             self.pub_venue = 'Book'
             self.doc_type_human = 'Book chapter'
         elif self.doc_type == 'BOOK':
