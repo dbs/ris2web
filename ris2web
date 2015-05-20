@@ -22,7 +22,7 @@ class Author:
 class RIS:
     "Models a RIS record"
     
-    def __init__(self, record, authors, kw):
+    def __init__(self, record, authors, kw, notes):
         "Init the RIS record"
         self.id = record[0]
         self.abstract = record[1]
@@ -54,6 +54,7 @@ class RIS:
         self.access_date = record[26]
         self.init_authors(authors)
         self.kw = kw
+        self.notes = notes
         self.get_schema_type()
 
     def init_authors(self, authors):
@@ -121,8 +122,8 @@ def get_db():
     password parameter, so let's keep it simple.
     """
 
-    db_name = "refstats"
-    db_user = "refstats"
+    db_name = "risweb"
+    db_user = "dan"
     try:
         conn = psycopg2.connect(
             database=db_name,
@@ -148,6 +149,7 @@ def citation_html(work_id):
         works = conn.cursor()
         authors = conn.cursor()
         kw = conn.cursor()
+        notes = conn.cursor()
         works.execute("SELECT id, abstract, call_number, pub_place, \
                 pub_date, doi, pub_database, end_page, edition, issue_number, \
                 alternate_title, local_url, language, id_number, work_type, \
@@ -158,8 +160,13 @@ def citation_html(work_id):
         record = works.fetchone()
         authors.execute("SELECT id, author_type, author_name, uri FROM ris_authors WHERE citation = %s ORDER BY id ASC", (record[0],))
         kw.execute("SELECT keywords FROM ris_keywords WHERE citation = %s ORDER BY keywords", (record[0],))
-        r = RIS(record, authors, kw.fetchall())
+        notes.execute("SELECT notes FROM ris_notes WHERE citation = %s ORDER BY id ASC", (record[0],))
+        r = RIS(record, authors, kw.fetchall(), notes.fetchall())
         return render_template('citation.html', record=r)
+        works.close()
+        authors.close()
+        kw.close()
+        notes.close()
     except Exception as e:
         print(e)
         return abort(500)

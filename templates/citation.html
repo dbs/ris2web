@@ -76,12 +76,6 @@ tbody th { text-align: left; }
   <td property="issn">ISSN: {{ record.isbn_issn|escape }}</td>
 </tr>
 {%- endif %}
-{%- if record.abstract %}
-<tr>
-  <th>Abstract:</th>
-  <td class="abstract" property="description">{{ record.abstract|escape }}</td>
-</tr>
-{%- endif %}
 {%- if record.start_page and record.end_page %}
 <tr>
   <th>Pages</th>
@@ -94,7 +88,7 @@ tbody th { text-align: left; }
   <td><a href="{{ record.url|escape }}" property="url">{{ record.url|escape }}</a></td>
 </tr>
 {%- endif %}
-{%- if record.kw%}
+{%- if record.kw %}
 <tr>
   <th>Keywords</th>
   <td>
@@ -106,5 +100,15 @@ tbody th { text-align: left; }
 {%- endif %}
 </tbody>
 </table>
+{%- if record.abstract %}
+<h2>Abstract</h2>
+  <p class="abstract" property="description">{{ record.abstract|escape }}</p>
+{%- endif %}
+{%- if record.notes %}
+<h2>Notes</h2>
+  {%- for note in record.notes %} 
+  <p property="description">{{ note.0|safe }}</p>
+  {%- endfor%}
+{%- endif %}
 </body>
 </html>
