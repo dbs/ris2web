@@ -61,7 +61,7 @@ class RISParser:
 
     skip_keys = ('L1', 'L4')
 
-    def __init__(self, ris_f="cawls.ris", core_f="core.sql", authors="authors.sql", kw_f="keywords.sql"):
+    def __init__(self, ris_f="cawls.ris", core_f="core.sql", authors="authors.sql", kw_f="keywords.sql", notes_f="notes.sql"):
         self.rec = 0
         self.core = {}
         self.init_core()
@@ -69,9 +69,11 @@ class RISParser:
         self.core_f = open(core_f, "w")
         self.authors_f = open(authors, "w")
         self.kw_f = open(kw_f, "w")
+        self.notes_f = open(notes_f, "w")
         self.sql_header_core()
         self.sql_header_authors()
         self.sql_header_keywords()
+        self.sql_header_notes()
 
     def init_core(self):
         self.authors = [] 
@@ -109,8 +111,15 @@ class RISParser:
             + "COPY ris_keywords(citation, keywords) FROM STDIN;\n"
         self.kw_f.write(sql)
 
+    def sql_header_notes(self, table="notes"):
+        sql = "DROP TABLE IF EXISTS ris_notes;\n" \
+            + "CREATE TABLE ris_notes(id SERIAL, citation INTEGER, " \
+            + "notes TEXT);\n" \
+            + "COPY ris_notes(citation, notes) FROM STDIN;\n"
+        self.notes_f.write(sql)
+
     def close_sql(self):
-        for f in (self.core_f, self.authors_f, self.kw_f):
+        for f in (self.core_f, self.authors_f, self.kw_f, self.notes_f):
             f.write("\\.\n")
 
     def parse(self, line):
@@ -129,6 +138,7 @@ class RISParser:
         self.write_core()
         self.write_authors()
         self.write_keywords()
+        self.write_notes()
         self.init_core()
         self.rec += 1
 
@@ -149,6 +159,10 @@ class RISParser:
     def write_keywords(self):
         for x in self.keywords:
             self.kw_f.write("%d\t%s\n" % (self.rec, x))
+
+    def write_notes(self):
+        for x in self.notes:
+            self.notes_f.write("%d\t%s\n" % (self.rec, x))
 
     def store(self):
         if self.lastkey in RISParser.core_map:
@@ -171,5 +185,5 @@ class RISParser:
         self.close_sql()
 
 if __name__ == "__main__":
-    foo = RISParser(ris_f="cawls.ris", core_f="core.sql", authors="authors.sql", kw_f="keywords.sql")
+    foo = RISParser(ris_f="cawls.ris", core_f="core.sql", authors="authors.sql", kw_f="keywords.sql", notes_f="notes.sql")
     foo.parsefile()
