@@ -151,6 +151,7 @@ class RISParser:
             val = val.replace('\t', ' ')
             self.core_f.write("\t%s" % (val))
         self.core_f.write("\n")
+        self.core_f.write("UPDATE ris_core SET isbn_issn = regexp_replace(isbn_issn, '^(\d{4})(\d{4})$', '\1-\2') WHERE isbn_issn ~ '^\d{8}$;\n")
         
     def write_authors(self):
         for x, y in self.authors:
