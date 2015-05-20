@@ -71,9 +71,9 @@ tbody th { text-align: left; }
   <td property="isbn">{{ record.isbn_issn|escape }}</td>
 </tr>
 {%- elif record.isbn_issn and record.pub_venue == 'Periodical' %}
-<tr>
+<tr resource="#pub_venue">
   <th>ISSN</th>
-  <td property="issn">ISSN: {{ record.isbn_issn|escape }}</td>
+  <td property="issn">{{ record.isbn_issn|escape }}</td>
 </tr>
 {%- endif %}
 {%- if record.start_page and record.end_page %}
