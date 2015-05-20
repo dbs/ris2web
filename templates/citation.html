@@ -62,7 +62,7 @@ tbody th { text-align: left; }
 {%- if record.pub_date_human %}
 <tr>
   <th>Date</th>
-  <td property="datePublished">{{ record.pub_date_human|escape }}</td>
+  <td property="datePublished">{{ record.pub_date_human|escape|trim }}</td>
 </tr>
 {%- endif %}
 {%- if record.isbn_issn and record.pub_venue == 'Book' %}
@@ -107,7 +107,7 @@ tbody th { text-align: left; }
 {%- if record.notes %}
 <h2>Notes</h2>
   {%- for note in record.notes %} 
-  <p property="description">{{ note.0|safe }}</p>
+  <p property="description">{{ note.0|striptags }}</p>
   {%- endfor%}
 {%- endif %}
 </body>
