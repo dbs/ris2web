@@ -3,6 +3,7 @@
 
 from flask import Flask, abort, request, render_template
 from os.path import abspath, dirname
+import configparser
 import psycopg2
 
 app = Flask(__name__)
@@ -122,12 +123,10 @@ def get_db():
     password parameter, so let's keep it simple.
     """
 
-    db_name = "risweb"
-    db_user = "dan"
     try:
         conn = psycopg2.connect(
-            database=db_name,
-            user=db_user
+            database=config['database']['dbname'],
+            user=config['database']['dbuser']
         )
     except Exception as e:
         print(e)
@@ -184,4 +183,6 @@ def home_html():
     pass
 
 if __name__ == '__main__':
+    config = configparser.ConfigParser()
+    config.read('config.ini')
     app.run()
