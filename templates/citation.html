@@ -4,11 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Citation: {{ record.title|escape }}</title>
-<style>
-tbody th { text-align: left; }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link href='http://fonts.googleapis.com/css?family=Nunito:700' rel='stylesheet' type='text/css'>
 </head>
-<body vocab="http://schema.org/" typeof="{{ record.schema_type }}" {%
+<body>
+<header>
+<div class="header">
+    Bibliography of Canadian Work Labour Studies
+</div>
+</header>
+<section class="citation" vocab="http://schema.org/" typeof="{{ record.schema_type }}" {%
   if record.uri -%}
     resource="{{ record.uri }}"
 {% else -%}
@@ -110,5 +115,6 @@ tbody th { text-align: left; }
   <p property="description">{{ note.0|striptags }}</p>
   {%- endfor%}
 {%- endif %}
+</section>
 </body>
 </html>

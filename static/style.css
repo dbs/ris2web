@@ -1,0 +1,25 @@
+header {
+    background-color: #3a55a5;
+    border-bottom: 5px solid #2A3e7e;
+}
+body { 
+    margin: 0px;
+    background-color: white;
+}
+div.header {
+    color: white;
+    font-size: 160%;
+    padding: 1em;
+    font-family: 'Nunito', sans-serif;
+    font-weight: bold;
+}
+section.citation {
+    padding: 1em;
+}
+section.citation h1 {
+    font-family: 'Nunito', sans-serif;
+}
+section tbody th { 
+    text-align: left;
+    padding-right: 2em;
+}
