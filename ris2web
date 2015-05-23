@@ -267,6 +267,8 @@ class Facet:
         self.ftype = self.get_db_ftype(f[0])
         if self.ftype == 'doc_type':
             self.val = self.get_db_doctype(f[1])
+        else:
+            self.val = f[1]
 
     def get_db_doctype(self, rawtype):
         if rawtype in self.dt_map:
