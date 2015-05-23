@@ -1,23 +1,6 @@
-<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Citation: {{ record.title|escape }}</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<link href='http://fonts.googleapis.com/css?family=Nunito:700' rel='stylesheet' type='text/css'>
-</head>
-<body>
-<header>
-<div class="header">
-    Bibliography of Canadian Work Labour Studies
-</div>
-<div class="searchbox">
-    <form action="{{ url_for('search_bar') }}">
-        <input type="text" name="s"></input>
-    </form>
-</div>
-</header>
+{% extends "base.html" %}
+{% block title %}Citation: {{ record.title|escape }}{% endblock %}
+{%- block content -%}
 <section class="citation" vocab="http://schema.org/" typeof="{{ record.schema_type }}" {%
   if record.uri -%}
     resource="{{ record.uri }}"
@@ -48,7 +31,9 @@
 {%- if record.pub_venue == "Periodical" and record.doc_type != "RPRT" %}
 <tr property="isPartOf" typeof="{{ record.pub_venue }}" resource="#pub_venue">
   <th>Journal</th>
-  <td><span property="name">{{ record.title2|escape }}</span></td>
+  <td><span property="name"><a href="{{ 
+        url_for('filter_citations', facets='publication:' + record.title2)
+    }}">{{ record.title2|escape }}</a></span></td>
 </tr>
 {%- endif %}
 {%- if record.pub_venue == "Book" and record.doc_type != "RPRT" %}
@@ -121,5 +106,4 @@
   {%- endfor%}
 {%- endif %}
 </section>
-</body>
-</html>
+{%- endblock %}
