@@ -77,7 +77,20 @@ class RISParser:
         self.sql_core_adds = [
             "UPDATE ris_core SET isbn_issn = regexp_replace(isbn_issn, '^(\d{4})(\d{4})$', '\\1-\\2') WHERE isbn_issn ~ '^\d{8}$';",
             "ALTER TABLE ris_core ADD COLUMN kw_tsv TSVECTOR;",
-            "UPDATE ris_core SET kw_tsv = setweight(to_tsvector('english', title), 'A') || setweight(to_tsvector('english', COALESCE(abstract, '')), 'C') || setweight(to_tsvector('english', COALESCE((SELECT notes FROM ris_notes WHERE citation = id), '')), 'C') || setweight(to_tsvector('english', COALESCE((SELECT keywords FROM ris_keywords WHERE citation = id), '')), 'B');"
+            """UPDATE ris_core SET kw_tsv = setweight(to_tsvector('english', title), 'A')
+                 || setweight(to_tsvector('english', COALESCE(abstract, '')), 'C')
+                 || setweight(to_tsvector('english', COALESCE(
+                    (SELECT notes FROM ris_notes WHERE citation = id), '')), 'C')
+                 || setweight(to_tsvector('english', COALESCE(
+                    (SELECT keywords FROM ris_keywords WHERE citation = id), '')), 'B');""",
+            "DROP FUNCTION IF EXISTS ris_search(TEXT);",
+            "DROP TYPE IF EXISTS search_result;",
+            "CREATE TYPE search_result AS (citation INT, title TEXT, rank REAL);",
+            """CREATE FUNCTION ris_search(query TEXT) RETURNS SETOF search_result AS $$
+                 SELECT id, title, ts_rank_cd(kw_tsv, to_tsquery(query))
+                 FROM ris_core
+                WHERE kw_tsv @@ to_tsquery(query)
+                ORDER BY 3 DESC$$ LANGUAGE SQL;"""
         ]
 
     def init_core(self):
@@ -102,11 +115,12 @@ class RISParser:
         self.core_f.write(sql)
 
     def sql_header_authors(self, table="authors"):
-        sql = "DROP TABLE IF EXISTS ris_authors;\n" \
-            + "CREATE TABLE ris_authors(id SERIAL, citation INTEGER, " \
-            + "author_type TEXT, author_name TEXT, uri TEXT);\n" \
-            + "COPY ris_authors(citation, author_type, author_name) "\
-            + " FROM STDIN;\n"
+        sql = """
+            DROP TABLE IF EXISTS ris_authors;
+            CREATE TABLE ris_authors(id SERIAL, citation INTEGER, 
+                author_type TEXT, author_name TEXT, uri TEXT);
+            COPY ris_authors(citation, author_type, author_name)  FROM STDIN;
+        """
         self.authors_f.write(sql)
 
     def sql_header_keywords(self, table="keywords"):

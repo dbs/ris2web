@@ -12,6 +12,11 @@
 <div class="header">
     Bibliography of Canadian Work Labour Studies
 </div>
+<div class="searchbox">
+    <form action="{{ url_for('search_bar') }}">
+        <input type="text" name="s"></input>
+    </form>
+</div>
 </header>
 <section class="citation" vocab="http://schema.org/" typeof="{{ record.schema_type }}" {%
   if record.uri -%}

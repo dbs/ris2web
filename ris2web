@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 "Converts a database of RIS into HTML"
 
-from flask import Flask, abort, request, render_template
+from flask import Flask, abort, redirect, request, render_template, url_for
 from os.path import abspath, dirname
 import configparser
 import psycopg2
@@ -133,7 +133,7 @@ def get_db():
 
     return conn
 
-@app.route(app.url_base + '<int:work_id>', methods=['GET', 'POST'])
+@app.route(app.url_base + 'citation/<int:work_id>')
 def show_citation(work_id=None):
     "Show the specified work"
     if work_id:
@@ -170,6 +170,27 @@ def citation_html(work_id):
         print(e)
         return abort(500)
 
+@app.route(app.url_base + 'search', methods=['GET', 'POST'])
+def search_bar(search=None):
+    "Show the results of a search with GET"
+    s = request.args.get('s', '')
+    return redirect(url_for('search_results', search=s))
+
+@app.route(app.url_base + 'search/<search>', methods=['GET', 'POST'])
+def search_results(search=None):
+    "Show the results of a search"
+
+    try:
+        conn = get_db()
+        s = conn.cursor()
+        q = parse_query(search)
+        s.execute("SELECT citation, title, rank FROM ris_search(%s)", (q,))
+        return render_template('search_results.html', results=s.fetchall())
+        
+    except Exception as e:
+        print(e)
+        return abort(500)
+
 def risdate2human(date):
     "Turn a RIS date <YYYY>/<MM>/<DD>/<other> into human-friendly"
 
@@ -177,6 +198,19 @@ def risdate2human(date):
         return None
     return date.replace('/', ' ')
 
+def parse_query(q):
+    """
+    Turn a human search string into PostgreSQL tsquery
+
+    Add a space to the start of the search string so that we can do a simple
+    replace() for the boolean operators. No fancy quoting or anything here.
+    """
+
+    q = " %s" % (q)
+    q = q.replace(' AND ', ' & ')
+    q = q.replace(' OR ', ' | ')
+    q = q.replace(' NOT ', ' &! ')
+    return q
 
 def home_html():
     "Home page"
