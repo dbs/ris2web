@@ -84,13 +84,22 @@ class RISParser:
                  || setweight(to_tsvector('english', COALESCE(
                     (SELECT keywords FROM ris_keywords WHERE citation = id), '')), 'B');""",
             "DROP FUNCTION IF EXISTS ris_search(TEXT);",
-            "DROP TYPE IF EXISTS search_result;",
+            "DROP TYPE IF EXISTS search_result CASCADE;",
             "CREATE TYPE search_result AS (citation INT, title TEXT, rank REAL);",
-            """CREATE FUNCTION ris_search(query TEXT) RETURNS SETOF search_result AS $$
+            r"""CREATE FUNCTION ris_search(query TEXT) RETURNS SETOF search_result AS $$
                  SELECT id, title, ts_rank_cd(kw_tsv, to_tsquery(query))
                  FROM ris_core
                 WHERE kw_tsv @@ to_tsquery(query)
-                ORDER BY 3 DESC$$ LANGUAGE SQL;"""
+                ORDER BY 3 DESC$$ LANGUAGE SQL;""",
+            r"""CREATE OR REPLACE FUNCTION ris_filter(att TEXT, val TEXT)
+                RETURNS SETOF search_result AS $$
+                DECLARE
+                    sql TEXT := 'SELECT id, title, 0::REAL FROM ris_core
+                        WHERE ' || quote_ident(att) || ' = $2';
+                BEGIN
+                    RETURN QUERY EXECUTE sql USING att, val;
+                END;
+                $$ LANGUAGE PLPGSQL;"""
         ]
 
     def init_core(self):

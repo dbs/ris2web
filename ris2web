@@ -5,10 +5,13 @@ from flask import Flask, abort, redirect, request, render_template, url_for
 from os.path import abspath, dirname
 import configparser
 import psycopg2
+import re
 
 app = Flask(__name__)
 app.root_path = abspath(dirname(__file__))
 app.url_base = '/'
+config = configparser.ConfigParser()
+config.read(app.root_path + '/config.ini')
 
 class Author:
     "Models an author"
@@ -22,7 +25,7 @@ class Author:
 
 class RIS:
     "Models a RIS record"
-    
+
     def __init__(self, record, authors, kw, notes):
         "Init the RIS record"
         self.id = record[0]
@@ -128,10 +131,9 @@ def get_db():
             database=config['database']['dbname'],
             user=config['database']['dbuser']
         )
+        return conn
     except Exception as e:
         print(e)
-
-    return conn
 
 @app.route(app.url_base + 'citation/<int:work_id>')
 def show_citation(work_id=None):
@@ -186,7 +188,20 @@ def search_results(search=None):
         q = parse_query(search)
         s.execute("SELECT citation, title, rank FROM ris_search(%s)", (q,))
         return render_template('search_results.html', results=s.fetchall())
-        
+    except Exception as e:
+        print(e)
+        return abort(500)
+
+@app.route(app.url_base + 'filter/<facets>', methods=['GET', 'POST'])
+def filter_citations(facets=None):
+    "Facet results by publication, document type, keyword"
+
+    try:
+        conn = get_db()
+        s = conn.cursor()
+        f = Facet(facets)
+        s.execute("SELECT citation, title, rank FROM ris_filter(%s, %s) ORDER BY 2", (f.ftype, f.val,))
+        return render_template('search_results.html', results=s.fetchall())
     except Exception as e:
         print(e)
         return abort(500)
@@ -210,13 +225,60 @@ def parse_query(q):
     q = q.replace(' AND ', ' & ')
     q = q.replace(' OR ', ' | ')
     q = q.replace(' NOT ', ' &! ')
+    # Finally, replace all spaces with AND operator
+    q = re.sub(r'([^&|!]) ([^&|!])', r'\1 & \2', q)
     return q
 
 def home_html():
     "Home page"
     pass
 
+class Facet:
+    """
+    Represents structured values for facets
+
+    For example, "doctype:journal" to { 'type': 'doc_type', 'value': 'JOUR' }
+    """
+
+    def __init__(self, facets):
+        self.ft_map = {
+            'doctype': 'doc_type',
+            'publication': 'title2',
+            'keyword': 'keyword'
+        }
+
+        self.dt_map = {
+            'journal': 'JOUR',
+            'book': 'BOOK',
+            'chapter': 'CHAP',
+            'thesis': 'THES',
+            'electronic': 'ELEC',
+            'report': 'RPRT',
+            'magazine': 'MGZN',
+            'newspaper': 'NEWS',
+            'movie': 'MPCT',
+            'general': 'GEN',
+            'video': 'VIDEO',
+            'case_study': 'CASE',
+            'map': 'MAP'
+        }
+
+        f = facets.split(':')
+        self.ftype = self.get_db_ftype(f[0])
+        if self.ftype == 'doc_type':
+            self.val = self.get_db_doctype(f[1])
+
+    def get_db_doctype(self, rawtype):
+        if rawtype in self.dt_map:
+            return self.dt_map[rawtype]
+        else:
+            return None
+
+    def get_db_ftype(self, rawtype):
+        if rawtype in self.ft_map:
+            return self.ft_map[rawtype]
+        else:
+            return None
+
 if __name__ == '__main__':
-    config = configparser.ConfigParser()
-    config.read('config.ini')
     app.run()
