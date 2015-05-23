@@ -13,7 +13,9 @@
 {%- if record.doc_type_human %}
 <tr>
   <th>Document type</th>
-  <td>{{ record.doc_type_human|escape}}</td>
+  <td><a href="{{
+        url_for('filter_citations', facets='doctype:' + record.doc_type_human)
+    }}">{{ record.doc_type_human|escape}}</a></td>
 </tr>
 {%- endif %}
 {%- if record.authors|length > 0 %}

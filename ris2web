@@ -248,19 +248,20 @@ class Facet:
         }
 
         self.dt_map = {
-            'journal': 'JOUR',
-            'book': 'BOOK',
-            'chapter': 'CHAP',
-            'thesis': 'THES',
-            'electronic': 'ELEC',
-            'report': 'RPRT',
-            'magazine': 'MGZN',
-            'newspaper': 'NEWS',
-            'movie': 'MPCT',
-            'general': 'GEN',
-            'video': 'VIDEO',
-            'case_study': 'CASE',
-            'map': 'MAP'
+            'Article': 'JOUR',
+            'Journal': 'JOUR',
+            'Book': 'BOOK',
+            'Book chapter': 'CHAP',
+            'Thesis': 'THES',
+            'Electronic': 'ELEC',
+            'Report': 'RPRT',
+            'Magazine': 'MGZN',
+            'Newspaper': 'NEWS',
+            'Movie': 'MPCT',
+            'General': 'GEN',
+            'Video': 'VIDEO',
+            'Case study': 'CASE',
+            'Map': 'MAP'
         }
 
         f = facets.split(':')
