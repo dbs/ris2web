@@ -32,11 +32,6 @@ section.result a {
 .odd {
     background-color: #eeeeee;
 }
-div.searchbox {
-    position: absolute;
-    top: 1em;
-    right: 1em;
-}
 section.authors, section.publications {
     float: left;
 }
@@ -58,4 +53,14 @@ section.publications td.pub {
 }
 th.numcites {
     width: 5em;
+}
+div.searchbox label {
+    color: white;
+}
+@media screen and (min-device-width: 1024px) and (min-width: 960px) {
+    div.searchbox {
+        position: absolute;
+        top: 1em;
+        right: 1em;
+    }
 }
