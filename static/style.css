@@ -29,11 +29,33 @@ section.result {
 section.result a {
     text-decoration: none;
 }
-section.result.odd {
+.odd {
     background-color: #eeeeee;
 }
 div.searchbox {
     position: absolute;
     top: 1em;
     right: 1em;
+}
+section.authors, section.publications {
+    float: left;
+}
+section.authors td.author {
+    width: 12em;
+    padding-left: 2em;
+    text-indent: -2em;
+}
+section.authors th {
+    height: 2em;
+}
+section.publications {
+    padding-left: 2em;
+}
+section.publications td.pub {
+    width: 20em;
+    padding-left: 2em;
+    text-indent: -2em;
+}
+th.numcites {
+    width: 5em;
 }
