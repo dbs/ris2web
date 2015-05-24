@@ -8,10 +8,9 @@ body {
 }
 div.header {
     color: white;
-    font-size: 160%;
-    padding: 1em;
     font-family: 'Nunito', sans-serif;
     font-weight: bold;
+    padding-left: 1em;
 }
 section.citation, section.results {
     padding: 1em;
@@ -56,11 +55,16 @@ th.numcites {
 }
 div.searchbox label {
     color: white;
+    padding-left: 1em;
 }
 @media screen and (min-device-width: 1024px) and (min-width: 960px) {
     div.searchbox {
         position: absolute;
         top: 1em;
         right: 1em;
+    }
+    div.header {
+        padding: 1em;
+        font-size: 160%;
     }
 }
