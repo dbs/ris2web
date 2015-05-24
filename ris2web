@@ -192,7 +192,7 @@ def search_results(search=None):
         print(e)
         return abort(500)
 
-@app.route(app.url_base + 'filter/<facets>', methods=['GET', 'POST'])
+@app.route(app.url_base + 'filter/<path:facets>', methods=['GET', 'POST'])
 def filter_citations(facets=None):
     "Facet results by publication, document type, keyword"
 
