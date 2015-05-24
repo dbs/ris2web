@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Bibliography of Canadian Labour Studies{% endblock %}
+{%- block content -%}
+<section class="home">
+<p>
+    The <em>Bibliography of Canadian Labour Studies</em> offers approximately
+    5,000 citations of journal articles, books, book chapters, theses, and
+    other literature.
+</p>
+<h2>Authors</h2>
+<table>
+  <thead>
+    <tr><th>Author</th><th>Number of citations</th></tr>
+  </thead>
+  <tbody>
+{%- for author in summary.authors %}
+  <tr>
+    <td class="author {{ loop.cycle('odd', 'even') }}">
+      <a href="{{
+          url_for('filter_citations', facets='author:' + author.0|striptags)
+        }}">{{ author.0|striptags }}</a>
+    </td>
+    <td>{{ author.1 }}</td>
+  </tr>
+{%- endfor %}
+  </tbody>
+</table>
+<h2>Publications</h2>
+<table>
+  <thead>
+    <tr><th>Publication</th><th>Number of citations</th></tr>
+  </thead>
+  <tbody>
+{%- for pub in summary.pubs %}
+  <tr>
+    <td class="author {{ loop.cycle('odd', 'even') }}">
+      <a href="{{
+          url_for('filter_citations', facets='publication:' + pub.0|striptags)
+        }}">{{ pub.0|striptags }}</a>
+    </td>
+    <td>{{ pub.1 }}</td>
+  </tr>
+{%- endfor %}
+  </tbody>
+</table>
+</section>
+{%- endblock %}
