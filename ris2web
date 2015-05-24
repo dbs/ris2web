@@ -159,7 +159,7 @@ def citation_html(work_id):
             FROM citations \
             WHERE id = %s", (work_id,))
         record = works.fetchone()
-        authors.execute("SELECT id, author_type, author_name, uri FROM ris_authors WHERE citation = %s ORDER BY id ASC", (record[0],))
+        authors.execute("SELECT id, author_type, author_name, uri FROM authored_v WHERE citation = %s ORDER BY id ASC", (record[0],))
         kw.execute("SELECT keywords FROM citation_keywords WHERE citation = %s ORDER BY keywords", (record[0],))
         notes.execute("SELECT notes FROM citation_notes WHERE citation = %s ORDER BY id ASC", (record[0],))
         r = RIS(record, authors, kw.fetchall(), notes.fetchall())
