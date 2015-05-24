@@ -200,7 +200,10 @@ def filter_citations(facets=None):
         conn = get_db()
         s = conn.cursor()
         f = Facet(facets)
-        s.execute("SELECT citation, title, rank FROM ris_filter(%s, %s) ORDER BY 2", (f.ftype, f.val,))
+        if f.ftype == 'author':
+            s.execute("SELECT citation, title, rank FROM author_citations(%s) ORDER BY 2", (f.val,))
+        else:
+            s.execute("SELECT citation, title, rank FROM ris_filter(%s, %s) ORDER BY 2", (f.ftype, f.val,))
         return render_template('search_results.html', results=s.fetchall())
     except Exception as e:
         print(e)
@@ -261,7 +264,8 @@ class Facet:
         self.ft_map = {
             'doctype': 'doc_type',
             'publication': 'title2',
-            'keyword': 'keyword'
+            'keyword': 'keyword',
+            'author': 'author'
         }
 
         self.dt_map = {

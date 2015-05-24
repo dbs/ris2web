@@ -99,7 +99,16 @@ class RISParser:
                 BEGIN
                     RETURN QUERY EXECUTE sql USING att, val;
                 END;
-                $$ LANGUAGE PLPGSQL;"""
+                $$ LANGUAGE PLPGSQL;""",
+            r"""CREATE OR REPLACE FUNCTION author_citations(author INT)
+                RETURNS SETOF search_result AS $$
+                    SELECT c.id, c.title, 0::real
+                    FROM citations c
+                        INNER JOIN authored_v a ON c.id = a.citation
+                    WHERE a.id = author
+                    ORDER BY 2 ASC
+                $$ LANGUAGE SQL;"""
+
         ]
         self.sql_author_adds = [
             r"""CREATE TABLE authors (id SERIAL, author_name TEXT, uri TEXT);"""
