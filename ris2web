@@ -271,7 +271,7 @@ class Facet:
             'Map': 'MAP'
         }
 
-        f = facets.split(':')
+        f = facets.split(':', 1)
         self.ftype = self.get_db_ftype(f[0])
         if self.ftype == 'doc_type':
             self.val = self.get_db_doctype(f[1])
