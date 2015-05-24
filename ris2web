@@ -156,12 +156,12 @@ def citation_html(work_id):
                 alternate_title, local_url, language, id_number, work_type, \
                 publisher, pub_year, isbn_issn, start_page, short_title, \
                 title2, title3, title, doc_type, url, volume, access_date \
-            FROM ris_core \
+            FROM citations \
             WHERE id = %s", (work_id,))
         record = works.fetchone()
         authors.execute("SELECT id, author_type, author_name, uri FROM ris_authors WHERE citation = %s ORDER BY id ASC", (record[0],))
-        kw.execute("SELECT keywords FROM ris_keywords WHERE citation = %s ORDER BY keywords", (record[0],))
-        notes.execute("SELECT notes FROM ris_notes WHERE citation = %s ORDER BY id ASC", (record[0],))
+        kw.execute("SELECT keywords FROM citation_keywords WHERE citation = %s ORDER BY keywords", (record[0],))
+        notes.execute("SELECT notes FROM citation_notes WHERE citation = %s ORDER BY id ASC", (record[0],))
         r = RIS(record, authors, kw.fetchall(), notes.fetchall())
         return render_template('citation.html', record=r)
         works.close()
@@ -235,9 +235,19 @@ def home_html():
 
     conn = get_db()
     a = conn.cursor()
-    a.execute("SELECT author_name, COUNT(*) FROM ris_authors GROUP BY author_name ORDER BY 2 DESC LIMIT 50;")
+    a.execute(r"""SELECT id, author_name, COUNT(*)
+        FROM authored_v
+        GROUP BY id, author_name
+        ORDER BY 3 DESC
+        LIMIT 50;"""
+    )
     p = conn.cursor()
-    p.execute("SELECT title2, COUNT(*) FROM ris_core GROUP BY title2 ORDER BY 2 DESC LIMIT 50;")
+    p.execute(r"""SELECT title2, COUNT(*)
+        FROM citations
+        GROUP BY title2
+        ORDER BY 2 DESC
+        LIMIT 50;"""
+    )
     return render_template('home.html', summary={'authors': a.fetchall(), 'pubs': p.fetchall()})
 
 class Facet:

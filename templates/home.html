@@ -19,9 +19,9 @@
     <td class="author">
       <a href="{{
           url_for('filter_citations', facets='author:' + author.0|striptags)
-        }}">{{ author.0|striptags }}</a>
+        }}">{{ author.1|striptags }}</a>
     </td>
-    <td>{{ author.1 }}</td>
+    <td>{{ author.2 }}</td>
   </tr>
 {%- endfor %}
   </tbody>

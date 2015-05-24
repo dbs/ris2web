@@ -75,33 +75,45 @@ class RISParser:
         self.sql_header_keywords()
         self.sql_header_notes()
         self.sql_core_adds = [
-            "UPDATE ris_core SET isbn_issn = regexp_replace(isbn_issn, '^(\d{4})(\d{4})$', '\\1-\\2') WHERE isbn_issn ~ '^\d{8}$';",
-            "ALTER TABLE ris_core ADD COLUMN kw_tsv TSVECTOR;",
-            """UPDATE ris_core SET kw_tsv = setweight(to_tsvector('english', title), 'A')
+            "UPDATE citations SET isbn_issn = regexp_replace(isbn_issn, '^(\d{4})(\d{4})$', '\\1-\\2') WHERE isbn_issn ~ '^\d{8}$';",
+            "ALTER TABLE citations ADD COLUMN kw_tsv TSVECTOR;",
+            """UPDATE citations SET kw_tsv = setweight(to_tsvector('english', title), 'A')
                  || setweight(to_tsvector('english', COALESCE(abstract, '')), 'C')
                  || setweight(to_tsvector('english', COALESCE(
-                    (SELECT notes FROM ris_notes WHERE citation = id), '')), 'C')
+                    (SELECT notes FROM citation_notes WHERE citation = id), '')), 'C')
                  || setweight(to_tsvector('english', COALESCE(
-                    (SELECT keywords FROM ris_keywords WHERE citation = id), '')), 'B');""",
+                    (SELECT keywords FROM citation_keywords WHERE citation = id), '')), 'B');""",
             "DROP FUNCTION IF EXISTS ris_search(TEXT);",
             "DROP TYPE IF EXISTS search_result CASCADE;",
             "CREATE TYPE search_result AS (citation INT, title TEXT, rank REAL);",
             r"""CREATE FUNCTION ris_search(query TEXT) RETURNS SETOF search_result AS $$
                  SELECT id, title, ts_rank_cd(kw_tsv, to_tsquery(query))
-                 FROM ris_core
+                 FROM citations
                 WHERE kw_tsv @@ to_tsquery(query)
                 ORDER BY 3 DESC$$ LANGUAGE SQL;""",
             r"""CREATE OR REPLACE FUNCTION ris_filter(att TEXT, val TEXT)
                 RETURNS SETOF search_result AS $$
                 DECLARE
-                    sql TEXT := 'SELECT id, title, 0::REAL FROM ris_core
+                    sql TEXT := 'SELECT id, title, 0::REAL FROM citations
                         WHERE ' || quote_ident(att) || ' = $2';
                 BEGIN
                     RETURN QUERY EXECUTE sql USING att, val;
                 END;
                 $$ LANGUAGE PLPGSQL;"""
         ]
-
+        self.sql_author_adds = [
+            r"""CREATE TABLE authors (id SERIAL, author_name TEXT, uri TEXT);"""
+            r"""INSERT INTO authors (author_name)
+                    SELECT DISTINCT author_name FROM cites_to_authors;""",
+            r"""UPDATE cites_to_authors SET author = (
+                    SELECT id FROM authors
+                    WHERE cites_to_authors.author_name = authors.author_name
+                );""",
+            r"""ALTER TABLE cites_to_authors DROP COLUMN author_name;""",
+            r"""CREATE VIEW authored_v AS
+                    SELECT citation, id, author_type, author_name, uri
+                    FROM authors INNER JOIN cites_to_authors ON author = id;"""
+        ]
     def init_core(self):
         self.authors = [] 
         self.keywords = [] 
@@ -111,7 +123,7 @@ class RISParser:
         for v in RISParser.core_map.values():
             self.core[v] = None
 
-    def sql_header_core(self, table='ris_core'):
+    def sql_header_core(self, table='citations'):
         sql = "DROP TABLE IF EXISTS %s; CREATE TABLE %s(id INTEGER, " % (table, table)
         for key in sorted(self.core_map.keys()):
             sql = sql + "%s TEXT, " % (self.core_map[key])
@@ -124,26 +136,26 @@ class RISParser:
         self.core_f.write(sql)
 
     def sql_header_authors(self, table="authors"):
-        sql = """
-            DROP TABLE IF EXISTS ris_authors;
-            CREATE TABLE ris_authors(id SERIAL, citation INTEGER, 
-                author_type TEXT, author_name TEXT, uri TEXT);
-            COPY ris_authors(citation, author_type, author_name)  FROM STDIN;
+        sql = r"""
+            DROP TABLE IF EXISTS cites_to_authors;
+            CREATE TABLE cites_to_authors(citation INTEGER,
+                author_type TEXT, author INT, author_name TEXT);
+            COPY cites_to_authors(citation, author_type, author_name) FROM STDIN;
         """
         self.authors_f.write(sql)
 
     def sql_header_keywords(self, table="keywords"):
-        sql = "DROP TABLE IF EXISTS ris_keywords;\n" \
-            + "CREATE TABLE ris_keywords(id SERIAL, citation INTEGER, " \
+        sql = "DROP TABLE IF EXISTS citation_keywords;\n" \
+            + "CREATE TABLE citation_keywords(id SERIAL, citation INTEGER, " \
             + "keywords TEXT);\n" \
-            + "COPY ris_keywords(citation, keywords) FROM STDIN;\n"
+            + "COPY citation_keywords(citation, keywords) FROM STDIN;\n"
         self.kw_f.write(sql)
 
     def sql_header_notes(self, table="notes"):
-        sql = "DROP TABLE IF EXISTS ris_notes;\n" \
-            + "CREATE TABLE ris_notes(id SERIAL, citation INTEGER, " \
+        sql = "DROP TABLE IF EXISTS citation_notes;\n" \
+            + "CREATE TABLE citation_notes(id SERIAL, citation INTEGER, " \
             + "notes TEXT);\n" \
-            + "COPY ris_notes(citation, notes) FROM STDIN;\n"
+            + "COPY citation_notes(citation, notes) FROM STDIN;\n"
         self.notes_f.write(sql)
 
     def close_sql(self):
@@ -152,6 +164,9 @@ class RISParser:
         for line in self.sql_core_adds:
             self.core_f.write(line)
             self.core_f.write("\n")
+        for line in self.sql_author_adds:
+            self.authors_f.write(line)
+            self.authors_f.write("\n")
 
     def parse(self, line):
         if len(line) == 1:
