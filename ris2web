@@ -135,7 +135,7 @@ def get_db():
     except Exception as e:
         print(e)
 
-@app.route(app.url_base + 'citation/<int:work_id>')
+@app.route('/citation/<int:work_id>')
 def show_citation(work_id=None):
     "Show the specified work"
     if work_id:
@@ -172,13 +172,13 @@ def citation_html(work_id):
         print(e)
         return abort(500)
 
-@app.route(app.url_base + 'search', methods=['GET', 'POST'])
+@app.route('/search', methods=['GET', 'POST'])
 def search_bar(search=None):
     "Show the results of a search with GET"
     s = request.args.get('s', '')
     return redirect(url_for('search_results', search=s))
 
-@app.route(app.url_base + 'search/<search>', methods=['GET', 'POST'])
+@app.route('/search/<search>', methods=['GET', 'POST'])
 def search_results(search=None):
     "Show the results of a search"
 
@@ -192,7 +192,7 @@ def search_results(search=None):
         print(e)
         return abort(500)
 
-@app.route(app.url_base + 'filter/<path:facets>', methods=['GET', 'POST'])
+@app.route('/filter/<path:facets>', methods=['GET', 'POST'])
 def filter_citations(facets=None):
     "Facet results by publication, document type, keyword"
 
