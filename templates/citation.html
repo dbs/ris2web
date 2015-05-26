@@ -30,6 +30,12 @@
 </tr>
 {%- endfor %}
 {%- endif %}
+{%- if record.doc_type == 'THES' and record.work_type %}
+<tr>
+    <th>Degree</th>
+    <td>{{ record.work_type|striptags }}</td>
+</tr>
+{%- endif %}
 {%- if record.doc_type != "THES" %}
     {%- if record.pub_venue == "Periodical" and record.doc_type != "RPRT" %}
 <tr property="isPartOf" typeof="{{ record.pub_venue }}" resource="#pub_venue">
@@ -75,10 +81,10 @@
   <td property="issn">{{ record.isbn_issn|escape }}</td>
 </tr>
 {%- endif %}
-{%- if record.start_page and record.end_page %}
+{%- if record.start_page %}
 <tr>
   <th>Pages</th>
-  <td property="pagination"><span property="pageStart">{{ record.start_page|escape }}</span>-<span property="pageEnd">{{ record.end_page|escape }}</span></td>
+  <td property="pagination"><span property="pageStart">{{ record.start_page|escape }}</span>{% if record.end_page %}-<span property="pageEnd">{{ record.end_page|escape }}</span>{% endif %}</td>
 </tr>
 {%- endif %}
 {%- if record.url %}
