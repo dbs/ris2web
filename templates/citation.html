@@ -45,7 +45,7 @@
     }}">{{ record.title2|escape }}</a></span></td>
 </tr>
     {%- endif %}
-    {%- if record.pub_venue == "Book" and record.doc_type != "RPRT" %}
+    {%- if record.pub_venue == "Book" and record.doc_type != "RPRT" and record.doc_type != "BOOK" %}
 <tr property="isPartOf" typeof="{{ record.pub_venue }}" resource="#pub_venue">
   <th>Book</th>
   <td><span property="name">{{ record.title2|escape }}</span></td>
