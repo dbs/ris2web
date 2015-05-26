@@ -107,8 +107,13 @@ class RISParser:
                         INNER JOIN authored_v a ON c.id = a.citation
                     WHERE a.id = author
                     ORDER BY 2 ASC
-                $$ LANGUAGE SQL;"""
-
+                $$ LANGUAGE SQL;""",
+            r"""UPDATE citations
+                SET title2 = 'Relations Industrielles / Industrial Relations'
+                WHERE title2 IN ('Relations Industrielles', 'Relations industrielles');""",
+            r"""UPDATE citations
+                SET title2 = 'Labour / Le Travail'
+                WHERE title2 IN ('Labour/Le Travail');"""
         ]
         self.sql_author_adds = [
             r"""CREATE TABLE authors (id SERIAL, author_name TEXT, uri TEXT);"""
