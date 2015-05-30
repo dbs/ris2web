@@ -1,16 +1,26 @@
-header {
+header, footer {
     background-color: #3a55a5;
     border-bottom: 5px solid #2A3e7e;
+}
+.footer {
+    padding: 1em 0 1em 0;
+    clear: both;
+}
+.footer a {
+    color: white;
 }
 body { 
     margin: 0px;
     background-color: white;
 }
-div.header {
+div.header, footer {
     color: white;
     font-family: 'Nunito', sans-serif;
     font-weight: bold;
     padding-left: 1em;
+}
+section {
+    margin: 0 0 1em 1em;
 }
 section.citation, section.results {
     padding: 1em;
