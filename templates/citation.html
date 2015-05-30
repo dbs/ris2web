@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Citation: {{ record.title|escape }}{% endblock %}
 {%- block content -%}
-<section class="citation" vocab="http://schema.org/" typeof="{{ record.schema_type }}" {%
+<section class="citation" vocab="http://schema.org/" prefix="lcrel: http://id.loc.gov/vocabulary/relators/" typeof="{{ record.schema_type }}" {%
   if record.uri -%}
     resource="{{ record.uri }}"
 {% else -%}
@@ -19,7 +19,8 @@
 </tr>
 {%- endif %}
 {%- if record.authors|length > 0 %}
-{%- for author in record.authors %} 
+{%-     for author in record.authors %} 
+{%-         if author.author_type == 'author': %}
 <tr>
   <th>Author</th>
   <td class="author">
@@ -28,7 +29,35 @@
   </span>
   </td>
 </tr>
-{%- endfor %}
+{%-         elif author.author_type == 'editor': %}
+<tr>
+  <th>Editor</th>
+  <td class="author">
+  <span property="editor" typeof="Person">
+      <span property="name">{{ author.name|escape }}</span>
+  </span>
+  </td>
+</tr>
+{%-         elif author.author_type == 'series_editor': %}
+<tr>
+  <th>Series Editor</th>
+  <td class="author">
+  <span property="editor" typeof="Person">
+      <span property="name">{{ author.name|escape }}</span>
+  </span>
+  </td>
+</tr>
+{%-         elif author.author_type == 'translator': %}
+<tr>
+  <th>Translator</th>
+  <td class="author">
+  <span property="contributor lcrel:trl" typeof="Person">
+      <span property="name">{{ author.name|escape }}</span>
+  </span>
+  </td>
+</tr>
+{%-         endif %}
+{%-     endfor %}
 {%- endif %}
 {%- if record.doc_type == 'THES' and record.work_type %}
 <tr>

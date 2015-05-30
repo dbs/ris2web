@@ -51,12 +51,13 @@ class RISParser:
         'Y2': 'access_date'
     }
 
-    # multiple authors per citation
+    # multiple authors / editors per citation
+    # see http://refdb.sourceforge.net/manual/ch07.html#sect1-ris-format
     author_map = {
-        'AU': 'first',
-        'A2': 'secondary',
-        'A3': 'tertiary',
-        'A4': 'quaternary'
+        'AU': 'author',
+        'A2': 'editor',
+        'A3': 'series_editor',
+        'A4': 'translator'
     }
 
     skip_keys = ('L1', 'L4')
