@@ -3,11 +3,20 @@
 {%- block content -%}
 <section class="results">
 <span class="result_count">{{ results.start }} - {{ results.end }} of {{ results.cnt }}</span>
-{%- if results.page_next %}
+{%- if results.q %}
+    {%- if results.page_next %}
     <span class="pager"><a href="{{ url_for('search_results', search=results.q, offset=results.page_next, limit=results.limit)}}">Next</a></span>
-{%- endif %}
-{%- if results.page_prev %}
+    {%- endif %}
+    {%- if results.page_prev %}
     <span class="pager"><a href="{{ url_for('search_results', search=results.q, offset=results.page_prev, limit=results.limit)}}">Previous</a></span>
+    {%- endif %}
+{%- elif results.facets %}
+    {%- if results.page_next %}
+    <span class="pager"><a href="{{ url_for('filter_citations', facets=results.facets, offset=results.page_next, limit=results.limit)}}">Next</a></span>
+    {%- endif %}
+    {%- if results.page_prev %}
+    <span class="pager"><a href="{{ url_for('filter_citations', facets=results.facets, offset=results.page_prev, limit=results.limit)}}">Previous</a></span>
+    {%- endif %}
 {%- endif %}
 {%- for r in results.r %}
   <section class="result {{ loop.cycle('odd', 'even') }}">

@@ -196,14 +196,8 @@ def search_results(search=None, offset=0, limit=25):
             s.execute(base_q, (q, limit))
 
         cnt = c.fetchone()[0]
-        end = limit + offset
-        page_next = offset + limit
-        page_prev = offset - limit
-        if end > cnt:
-            end = cnt
-            page_next = None
-        if not offset:
-            page_prev = None
+
+        (end, page_next, page_prev) = pager(limit, offset, cnt)
 
         return render_template('search_results.html', results={
             'q': search,
@@ -219,19 +213,50 @@ def search_results(search=None, offset=0, limit=25):
         print(e)
         return abort(500)
 
+def pager(limit, offset, cnt):
+    "Figure out the paging"
+    end = limit + offset
+    page_next = offset + limit
+    page_prev = offset - limit
+    if end > cnt:
+        end = cnt
+        page_next = None
+    if not offset:
+        page_prev = None
+
+    return(end, page_next, page_prev)
+
+@app.route('/filter/<path:facets>/<int:offset>/<int:limit>', methods=['GET', 'POST'])
 @app.route('/filter/<path:facets>', methods=['GET', 'POST'])
-def filter_citations(facets=None):
+def filter_citations(facets=None, offset=0, limit=25):
     "Facet results by publication, document type, keyword"
 
     try:
         conn = get_db()
         s = conn.cursor()
         f = Facet(facets)
+        c = conn.cursor()
         if f.ftype == 'author':
+            c.execute("SELECT COUNT(*) FROM author_citations(%s)", (f.val,))
             s.execute("SELECT citation, title, rank FROM author_citations(%s) ORDER BY 2", (f.val,))
         else:
+            c.execute("SELECT COUNT(*) FROM ris_filter(%s, %s)", (f.ftype, f.val,))
             s.execute("SELECT citation, title, rank FROM ris_filter(%s, %s) ORDER BY 2", (f.ftype, f.val,))
-        return render_template('search_results.html', results=s.fetchall())
+
+        cnt = c.fetchone()[0]
+
+        (end, page_next, page_prev) = pager(limit, offset, cnt)
+
+        return render_template('search_results.html', results={
+            'facets': facets,
+            'r': s.fetchall(),
+            'cnt':cnt,
+            'limit': limit,
+            'start': offset + 1,
+            'end': end,
+            'page_next': page_next,
+            'page_prev': page_prev
+        })
     except Exception as e:
         print(e)
         return abort(500)
