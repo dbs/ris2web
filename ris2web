@@ -290,20 +290,35 @@ def home_html():
 
     conn = get_db()
     a = conn.cursor()
+    ac = conn.cursor()
     a.execute(r"""SELECT id, author_name, COUNT(*)
         FROM authored_v
         GROUP BY id, author_name
         ORDER BY 3 DESC
         LIMIT 50;"""
     )
+    ac.execute(r"""WITH x AS (SELECT DISTINCT author_name FROM authored_v)
+        SELECT COUNT(*) FROM x"""
+    )
+    acnt = ac.fetchone()[0]
     p = conn.cursor()
+    pc = conn.cursor()
     p.execute(r"""SELECT title2, COUNT(*)
         FROM citations
         GROUP BY title2
         ORDER BY 2 DESC
         LIMIT 50;"""
     )
-    return render_template('home.html', summary={'authors': a.fetchall(), 'pubs': p.fetchall()})
+    pc.execute(r"""WITH x AS (SELECT DISTINCT title2 FROM citations)
+        SELECT COUNT(*) FROM x"""
+    )
+    pcnt = pc.fetchone()[0]
+    return render_template('home.html', summary={
+        'authors': a.fetchall(),
+        'acnt': acnt,
+        'pubs': p.fetchall(),
+        'pcnt': pcnt
+    })
 
 class Facet:
     """
@@ -357,4 +372,4 @@ class Facet:
             return None
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
