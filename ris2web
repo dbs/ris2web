@@ -178,16 +178,43 @@ def search_bar(search=None):
     s = request.args.get('s', '')
     return redirect(url_for('search_results', search=s))
 
-@app.route('/search/<search>', methods=['GET', 'POST'])
-def search_results(search=None):
+@app.route('/search/<path:search>/<int:offset>/<int:limit>', methods=['GET', 'POST'])
+@app.route('/search/<path:search>', methods=['GET', 'POST'])
+def search_results(search=None, offset=0, limit=25):
     "Show the results of a search"
 
     try:
         conn = get_db()
         s = conn.cursor()
         q = parse_query(search)
-        s.execute("SELECT citation, title, rank FROM ris_search(%s)", (q,))
-        return render_template('search_results.html', results=s.fetchall())
+        c = conn.cursor()
+        c.execute("SELECT COUNT(*) FROM ris_search(%s)", (q,))
+        base_q = r"""SELECT citation, title, rank FROM ris_search(%s) LIMIT %s"""
+        if offset and limit:
+            s.execute(base_q + " OFFSET %s", (q, limit, offset,))
+        else:
+            s.execute(base_q, (q, limit))
+
+        cnt = c.fetchone()[0]
+        end = limit + offset
+        page_next = offset + limit
+        page_prev = offset - limit
+        if end > cnt:
+            end = cnt
+            page_next = None
+        if not offset:
+            page_prev = None
+
+        return render_template('search_results.html', results={
+            'q': search,
+            'r': s.fetchall(),
+            'cnt': cnt,
+            'limit': limit,
+            'start': offset + 1,
+            'end': end,
+            'page_next': page_next,
+            'page_prev': page_prev
+        })
     except Exception as e:
         print(e)
         return abort(500)
