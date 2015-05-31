@@ -3,7 +3,8 @@ header, footer {
     border-bottom: 5px solid #2A3e7e;
 }
 .footer {
-    padding: 1em 0 1em 0;
+    padding-top: 1em;
+    padding-bottom: 1em;
     clear: both;
 }
 .footer a {
@@ -18,9 +19,6 @@ div.header, footer {
     font-family: 'Nunito', sans-serif;
     font-weight: bold;
     padding-left: 1em;
-}
-section {
-    margin: 0 0 1em 1em;
 }
 section.citation, section.results {
     padding: 1em;
@@ -42,6 +40,7 @@ section.result a {
     background-color: #eeeeee;
 }
 section.authors, section.publications {
+    margin: 0 0 1em 1em;
     float: left;
 }
 section.authors td.author {
