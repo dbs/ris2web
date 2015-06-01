@@ -131,6 +131,9 @@ class RISParser:
                 WHERE language IN ('fr en');""",
             r"""UPDATE citations SET language = 'French, English, Spanish'
                 WHERE language IN ('fr en sp');""",
+            r"""UPDATE citations
+                SET publisher = 'Canadian Committee on Labour History'
+                WHERE publisher = 'Committee on Canadian Labour History'""",
         ]
         self.sql_author_adds = [
             r"""CREATE TABLE authors (id SERIAL, author_name TEXT, uri TEXT);"""
