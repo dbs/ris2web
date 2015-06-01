@@ -58,9 +58,25 @@
   <tr class="{{ loop.cycle('odd', 'even') }}">
     <td class="pubtype">
       <a href="{{
-          url_for('filter_citations', facets='publication:' + pub.0|striptags)
+          url_for('filter_citations', facets='doctype:' + pub.0|striptags)
         }}">{{ pub.0|striptags }}</a>
     </td>
+    <td>{{ pub.1 }}</td>
+  </tr>
+{%- endfor %}
+  </tbody>
+</table>
+</section>
+<section class="languages home_summary">
+<h2>Languages</h2>
+<table>
+  <thead>
+    <tr><th>Language</th><th class="numcites">Number of citations</th></tr>
+  </thead>
+  <tbody>
+{%- for pub in summary.languages %}
+  <tr class="{{ loop.cycle('odd', 'even') }}">
+    <td class="pubtype">{{ pub.0|striptags }}</td>
     <td>{{ pub.1 }}</td>
   </tr>
 {%- endfor %}

@@ -351,6 +351,14 @@ def home_html():
             for dt in t:
                 types.append((dt_map_r[dt[0]], dt[1]))
 
+        with conn.cursor() as c:
+            c.execute(r"""SELECT language, COUNT(*)
+                FROM citations
+                GROUP BY language
+                ORDER BY 2 DESC"""
+            )
+            langs = c.fetchall()
+
     conn.close()
 
     return render_template('home.html', summary={
@@ -358,7 +366,8 @@ def home_html():
         'acnt': acnt,
         'pubs': pubs,
         'pcnt': pcnt,
-        'types': types
+        'types': types,
+        'languages': langs
     })
 
 class Facet:
