@@ -78,6 +78,8 @@ class RISParser:
         self.sql_header_notes()
         self.sql_core_adds = [
             "UPDATE citations SET isbn_issn = regexp_replace(isbn_issn, '^(\d{4})(\d{4})$', '\\1-\\2') WHERE isbn_issn ~ '^\d{8}$';",
+            "ALTER TABLE citations ADD COLUMN series TEXT;",
+            "ALTER TABLE citations ADD COLUMN pub_title TEXT;",
             "ALTER TABLE citations ADD COLUMN kw_tsv TSVECTOR;",
             r"""UPDATE citations SET kw_tsv = setweight(to_tsvector('english', title), 'A')
                  || setweight(to_tsvector('english', COALESCE(abstract, '')), 'C');""",
@@ -133,7 +135,15 @@ class RISParser:
                 WHERE language IN ('fr en sp');""",
             r"""UPDATE citations
                 SET publisher = 'Canadian Committee on Labour History'
-                WHERE publisher = 'Committee on Canadian Labour History'""",
+                WHERE publisher = 'Committee on Canadian Labour History';""",
+            r"""UPDATE citations SET series = title2
+                    WHERE doc_type IN ('BOOK', 'RPRT');""",
+            r"""UPDATE citations SET series = title3
+                    WHERE doc_type IN ('CHAP');""",
+            r"""UPDATE citations SET pub_title = title2
+                    WHERE doc_type IN ('JOUR', 'CHAP', 'NEWS', 'MGZN', 'ELEC');""",
+            r"""UPDATE citations SET pub_title = title
+                    WHERE doc_type IN ('BOOK');""",
         ]
         self.sql_author_adds = [
             r"""CREATE TABLE authors (id SERIAL, author_name TEXT, uri TEXT);"""

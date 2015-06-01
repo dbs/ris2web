@@ -328,16 +328,16 @@ def home_html():
             acnt = ac.fetchone()[0]
 
         with conn.cursor() as p:
-            p.execute(r"""SELECT title2, COUNT(*)
+            p.execute(r"""SELECT pub_title, COUNT(*)
                 FROM citations
-                GROUP BY title2
+                GROUP BY pub_title
                 ORDER BY 2 DESC
                 LIMIT 50;"""
             )
             pubs = p.fetchall()
 
         with conn.cursor() as pc:
-            pc.execute(r"""WITH x AS (SELECT DISTINCT title2 FROM citations)
+            pc.execute(r"""WITH x AS (SELECT DISTINCT pub_title FROM citations)
                 SELECT COUNT(*) FROM x"""
             )
             pcnt = pc.fetchone()[0]
@@ -360,9 +360,9 @@ def home_html():
             langs = c.fetchall()
 
         with conn.cursor() as c:
-            c.execute(r"""SELECT title3, COUNT(*)
+            c.execute(r"""SELECT series, COUNT(*)
                 FROM citations
-                GROUP BY title3 
+                GROUP BY series 
                 ORDER BY 2 DESC"""
             )
             series = c.fetchall()
@@ -389,10 +389,10 @@ class Facet:
     def __init__(self, facets):
         self.ft_map = {
             'doctype': 'doc_type',
-            'publication': 'title2',
+            'publication': 'pub_title',
             'keyword': 'keyword',
             'author': 'author',
-            'series': 'title3'
+            'series': 'series'
         }
 
         f = facets.split(':', 1)
