@@ -7,8 +7,9 @@ header, footer {
     padding-bottom: 1em;
     clear: both;
 }
-.footer a {
+.footer a, .header a {
     color: white;
+    text-decoration: none;
 }
 body { 
     margin: 0px;
