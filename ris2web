@@ -359,6 +359,14 @@ def home_html():
             )
             langs = c.fetchall()
 
+        with conn.cursor() as c:
+            c.execute(r"""SELECT title3, COUNT(*)
+                FROM citations
+                GROUP BY title3 
+                ORDER BY 2 DESC"""
+            )
+            series = c.fetchall()
+
     conn.close()
 
     return render_template('home.html', summary={
@@ -367,7 +375,8 @@ def home_html():
         'pubs': pubs,
         'pcnt': pcnt,
         'types': types,
-        'languages': langs
+        'languages': langs,
+        'series': series
     })
 
 class Facet:
@@ -382,7 +391,8 @@ class Facet:
             'doctype': 'doc_type',
             'publication': 'title2',
             'keyword': 'keyword',
-            'author': 'author'
+            'author': 'author',
+            'series': 'title3'
         }
 
         f = facets.split(':', 1)
@@ -405,4 +415,4 @@ class Facet:
             return None
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)

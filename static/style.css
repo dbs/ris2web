@@ -51,11 +51,11 @@ section.authors td.author {
 section.authors th {
     height: 2em;
 }
-section.publications {
+section.home_summary {
     padding-left: 2em;
 }
-section.publications td.pub {
-    width: 20em;
+section.home_summary td.pub {
+    max-width: 20em;
     padding-left: 2em;
     text-indent: -2em;
 }

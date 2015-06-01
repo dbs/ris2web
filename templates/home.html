@@ -37,9 +37,9 @@
 {%- for pub in summary.pubs %}
   <tr class="{{ loop.cycle('odd', 'even') }}">
     <td class="pub">
-      <a href="{{
-          url_for('filter_citations', facets='publication:' + pub.0|striptags)
-        }}">{{ pub.0|striptags }}</a>
+      {%- if pub.0 %}
+      <a href="{{url_for('filter_citations', facets='publication:' + pub.0|striptags)}}">
+      {%- endif %}{{ pub.0|striptags }}{%- if pub.0 %}</a>{%- endif %}
     </td>
     <td>{{ pub.1 }}</td>
   </tr>
@@ -57,9 +57,9 @@
 {%- for pub in summary.types %}
   <tr class="{{ loop.cycle('odd', 'even') }}">
     <td class="pubtype">
-      <a href="{{
-          url_for('filter_citations', facets='doctype:' + pub.0|striptags)
-        }}">{{ pub.0|striptags }}</a>
+      {%- if pub.0 %}
+      <a href="{{url_for('filter_citations', facets='doctype:' + pub.0|striptags)}}">
+      {%- endif %}{{ pub.0|striptags }}{%- if pub.0 %}</a>{%- endif %}
     </td>
     <td>{{ pub.1 }}</td>
   </tr>
@@ -77,6 +77,28 @@
 {%- for pub in summary.languages %}
   <tr class="{{ loop.cycle('odd', 'even') }}">
     <td class="pubtype">{{ pub.0|striptags }}</td>
+    <td>{{ pub.1 }}</td>
+  </tr>
+{%- endfor %}
+  </tbody>
+</table>
+</section>
+<section class="series home_summary">
+<h2>Series</h2>
+<table>
+  <thead>
+    <tr><th>Series title</th><th class="numcites">Number of citations</th></tr>
+  </thead>
+  <tbody>
+{%- for pub in summary.series %}
+  <tr class="{{ loop.cycle('odd', 'even') }}">
+    <td class="pub">
+      {%- if pub.0 %}
+      <a href="{{
+          url_for('filter_citations', facets='series:' + pub.0|striptags)
+        }}">
+      {%- endif %}{{ pub.0|striptags }}{%- if pub.0 %}</a>{%- endif %}
+    </td>
     <td>{{ pub.1 }}</td>
   </tr>
 {%- endfor %}
