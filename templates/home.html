@@ -7,7 +7,7 @@
     5,000 citations of journal articles, books, book chapters, theses, and
     other literature.
 </p>
-<section class="authors">
+<section class="authors home_summary">
 <h2>Authors ({{ summary.acnt }})</h2>
 <table>
   <thead>
@@ -27,7 +27,7 @@
   </tbody>
 </table>
 </section>
-<section class="publications">
+<section class="publications home_summary">
 <h2>Publications ({{ summary.pcnt }})</h2>
 <table>
   <thead>
@@ -37,6 +37,26 @@
 {%- for pub in summary.pubs %}
   <tr class="{{ loop.cycle('odd', 'even') }}">
     <td class="pub">
+      <a href="{{
+          url_for('filter_citations', facets='publication:' + pub.0|striptags)
+        }}">{{ pub.0|striptags }}</a>
+    </td>
+    <td>{{ pub.1 }}</td>
+  </tr>
+{%- endfor %}
+  </tbody>
+</table>
+</section>
+<section class="pubtypes home_summary">
+<h2>Publication types</h2>
+<table>
+  <thead>
+    <tr><th>Type</th><th class="numcites">Number of citations</th></tr>
+  </thead>
+  <tbody>
+{%- for pub in summary.types %}
+  <tr class="{{ loop.cycle('odd', 'even') }}">
+    <td class="pubtype">
       <a href="{{
           url_for('filter_citations', facets='publication:' + pub.0|striptags)
         }}">{{ pub.0|striptags }}</a>

@@ -13,6 +13,27 @@ app.url_base = '/'
 config = configparser.ConfigParser()
 config.read(app.root_path + '/config.ini')
 
+dt_map_r = {}
+dt_map = {
+    'Article': 'JOUR',
+    'Journal': 'JOUR',
+    'Book': 'BOOK',
+    'Book chapter': 'CHAP',
+    'Thesis': 'THES',
+    'Electronic': 'ELEC',
+    'Report': 'RPRT',
+    'Magazine': 'MGZN',
+    'Newspaper': 'NEWS',
+    'Movie': 'MPCT',
+    'General': 'GEN',
+    'Video': 'VIDEO',
+    'Case study': 'CASE',
+    'Map': 'MAP'
+}
+
+for key in dt_map:
+    dt_map_r[dt_map[key]] = key;
+
 class Author:
     "Models an author"
 
@@ -288,36 +309,56 @@ def parse_query(q):
 def home_html():
     "Home page"
 
+    types = []
     conn = get_db()
-    a = conn.cursor()
-    ac = conn.cursor()
-    a.execute(r"""SELECT id, author_name, COUNT(*)
-        FROM authored_v
-        GROUP BY id, author_name
-        ORDER BY 3 DESC
-        LIMIT 50;"""
-    )
-    ac.execute(r"""WITH x AS (SELECT DISTINCT author_name FROM authored_v)
-        SELECT COUNT(*) FROM x"""
-    )
-    acnt = ac.fetchone()[0]
-    p = conn.cursor()
-    pc = conn.cursor()
-    p.execute(r"""SELECT title2, COUNT(*)
-        FROM citations
-        GROUP BY title2
-        ORDER BY 2 DESC
-        LIMIT 50;"""
-    )
-    pc.execute(r"""WITH x AS (SELECT DISTINCT title2 FROM citations)
-        SELECT COUNT(*) FROM x"""
-    )
-    pcnt = pc.fetchone()[0]
+    with conn:
+        with conn.cursor() as a:
+            a.execute(r"""SELECT id, author_name, COUNT(*)
+                FROM authored_v
+                GROUP BY id, author_name
+                ORDER BY 3 DESC
+                LIMIT 50;"""
+            )
+            authors = a.fetchall()
+
+        with conn.cursor() as ac:
+            ac.execute(r"""WITH x AS (SELECT DISTINCT author_name FROM authored_v)
+                SELECT COUNT(*) FROM x"""
+            )
+            acnt = ac.fetchone()[0]
+
+        with conn.cursor() as p:
+            p.execute(r"""SELECT title2, COUNT(*)
+                FROM citations
+                GROUP BY title2
+                ORDER BY 2 DESC
+                LIMIT 50;"""
+            )
+            pubs = p.fetchall()
+
+        with conn.cursor() as pc:
+            pc.execute(r"""WITH x AS (SELECT DISTINCT title2 FROM citations)
+                SELECT COUNT(*) FROM x"""
+            )
+            pcnt = pc.fetchone()[0]
+
+        with conn.cursor() as t:
+            t.execute(r"""SELECT doc_type, COUNT(*)
+                FROM citations
+                GROUP BY doc_type
+                ORDER BY 2 DESC"""
+            )
+            for dt in t:
+                types.append((dt_map_r[dt[0]], dt[1]))
+
+    conn.close()
+
     return render_template('home.html', summary={
-        'authors': a.fetchall(),
+        'authors': authors,
         'acnt': acnt,
-        'pubs': p.fetchall(),
-        'pcnt': pcnt
+        'pubs': pubs,
+        'pcnt': pcnt,
+        'types': types
     })
 
 class Facet:
@@ -335,23 +376,6 @@ class Facet:
             'author': 'author'
         }
 
-        self.dt_map = {
-            'Article': 'JOUR',
-            'Journal': 'JOUR',
-            'Book': 'BOOK',
-            'Book chapter': 'CHAP',
-            'Thesis': 'THES',
-            'Electronic': 'ELEC',
-            'Report': 'RPRT',
-            'Magazine': 'MGZN',
-            'Newspaper': 'NEWS',
-            'Movie': 'MPCT',
-            'General': 'GEN',
-            'Video': 'VIDEO',
-            'Case study': 'CASE',
-            'Map': 'MAP'
-        }
-
         f = facets.split(':', 1)
         self.ftype = self.get_db_ftype(f[0])
         if self.ftype == 'doc_type':
@@ -360,8 +384,8 @@ class Facet:
             self.val = f[1]
 
     def get_db_doctype(self, rawtype):
-        if rawtype in self.dt_map:
-            return self.dt_map[rawtype]
+        if rawtype in dt_map:
+            return dt_map[rawtype]
         else:
             return None
 

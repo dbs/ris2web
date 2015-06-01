@@ -39,7 +39,7 @@ section.result a {
 .odd {
     background-color: #eeeeee;
 }
-section.authors, section.publications {
+section.home_summary {
     margin: 0 0 1em 1em;
     float: left;
 }
