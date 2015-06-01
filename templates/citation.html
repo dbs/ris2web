@@ -56,6 +56,15 @@
   </span>
   </td>
 </tr>
+{%-         elif author.author_type == 'contributor': %}
+<tr>
+  <th>Contributor</th>
+  <td class="author">
+  <span property="contributor" typeof="Person">
+      <span property="name">{{ author.name|escape }}</span>
+  </span>
+  </td>
+</tr>
 {%-         endif %}
 {%-     endfor %}
 {%- endif %}

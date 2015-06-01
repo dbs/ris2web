@@ -57,7 +57,8 @@ class RISParser:
         'AU': 'author',
         'A2': 'editor',
         'A3': 'series_editor',
-        'A4': 'translator'
+        'A4': 'translator',
+        'A5': 'contributor'
     }
 
     skip_keys = ('L1', 'L4')
