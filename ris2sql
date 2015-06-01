@@ -118,7 +118,19 @@ class RISParser:
                 WHERE title2 IN ('Relations Industrielles', 'Relations industrielles');""",
             r"""UPDATE citations
                 SET title2 = 'Labour / Le Travail'
-                WHERE title2 IN ('Labour/Le Travail');"""
+                WHERE title2 IN ('Labour/Le Travail');""",
+            r"""UPDATE citations SET language = 'English'
+                WHERE language IN ('eng', 'en', 'en_ca');""",
+            r"""UPDATE citations SET language = 'French'
+                WHERE language IN ('fr', 'fre');""",
+            r"""UPDATE citations SET language = 'Spanish'
+                WHERE language IN ('sp');""",
+            r"""UPDATE citations SET language = 'English, French'
+                WHERE language IN ('en fr', 'eng; fre');""",
+            r"""UPDATE citations SET language = 'French, English'
+                WHERE language IN ('fr en');""",
+            r"""UPDATE citations SET language = 'French, English, Spanish'
+                WHERE language IN ('fr en sp');""",
         ]
         self.sql_author_adds = [
             r"""CREATE TABLE authors (id SERIAL, author_name TEXT, uri TEXT);"""
