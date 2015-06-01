@@ -79,14 +79,14 @@ class RISParser:
         self.sql_core_adds = [
             "UPDATE citations SET isbn_issn = regexp_replace(isbn_issn, '^(\d{4})(\d{4})$', '\\1-\\2') WHERE isbn_issn ~ '^\d{8}$';",
             "ALTER TABLE citations ADD COLUMN kw_tsv TSVECTOR;",
-            "UPDATE citations SET kw_tsv = setweight(to_tsvector('english', title), 'A')
-                 || setweight(to_tsvector('english', COALESCE(abstract, '')), 'C');",
-            "UPDATE citations SET kw_tsv = kw_tsv || setweight(to_tsvector('english', COALESCE(
-                 (SELECT STRING_AGG(notes, ' ') FROM citation_notes WHERE citation = citations.id), '')), 'C');",
-            "UPDATE citations SET kw_tsv = kw_tsv || setweight(to_tsvector('english', COALESCE(
-                 (SELECT STRING_AGG(keywords, ' ') FROM citation_keywords WHERE citation = citations.id), '')), 'B');",
-            "UPDATE citations SET kw_tsv = kw_tsv || setweight(to_tsvector('english', COALESCE(
-                 (SELECT STRING_AGG(author_name, ' ') FROM authored_v WHERE citation = citations.id), '')), 'B');",
+            r"""UPDATE citations SET kw_tsv = setweight(to_tsvector('english', title), 'A')
+                 || setweight(to_tsvector('english', COALESCE(abstract, '')), 'C');""",
+            r"""UPDATE citations SET kw_tsv = kw_tsv || setweight(to_tsvector('english', COALESCE(
+                 (SELECT STRING_AGG(notes, ' ') FROM citation_notes WHERE citation = citations.id), '')), 'C');""",
+            r"""UPDATE citations SET kw_tsv = kw_tsv || setweight(to_tsvector('english', COALESCE(
+                 (SELECT STRING_AGG(keywords, ' ') FROM citation_keywords WHERE citation = citations.id), '')), 'B');""",
+            r"""UPDATE citations SET kw_tsv = kw_tsv || setweight(to_tsvector('english', COALESCE(
+                 (SELECT STRING_AGG(author_name, ' ') FROM authored_v WHERE citation = citations.id), '')), 'B');""",
             "CREATE INDEX kw_tsv_index ON citations USING GIN(kw_tsv);",
             "DROP FUNCTION IF EXISTS ris_search(TEXT);",
             "DROP TYPE IF EXISTS search_result CASCADE;",
