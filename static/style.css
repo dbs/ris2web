@@ -52,9 +52,6 @@ section.authors td.author {
 section.authors th {
     height: 2em;
 }
-section.home_summary {
-    padding-left: 2em;
-}
 section.home_summary td.pub {
     max-width: 20em;
     padding-left: 2em;
@@ -76,5 +73,8 @@ div.searchbox label {
     div.header {
         padding: 1em;
         font-size: 160%;
+    }
+    section.home_summary {
+        padding-left: 2em;
     }
 }
