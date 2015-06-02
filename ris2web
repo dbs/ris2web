@@ -20,7 +20,7 @@ dt_map = {
     'Book': 'BOOK',
     'Book chapter': 'CHAP',
     'Thesis': 'THES',
-    'Electronic': 'ELEC',
+    'Web Page': 'ELEC',
     'Report': 'RPRT',
     'Magazine': 'MGZN',
     'Newspaper': 'NEWS',
