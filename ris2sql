@@ -77,6 +77,9 @@ class RISParser:
         self.sql_header_keywords()
         self.sql_header_notes()
         self.sql_core_adds = [
+            r"""UPDATE citations
+                SET url = regexp_replace(url, '\.librweb.laurentian.ca', '')
+                WHERE url ~ 'librweb';""",
             "UPDATE citations SET isbn_issn = regexp_replace(isbn_issn, '^(\d{4})(\d{4})$', '\\1-\\2') WHERE isbn_issn ~ '^\d{8}$';",
             "ALTER TABLE citations ADD COLUMN series TEXT;",
             "ALTER TABLE citations ADD COLUMN pub_title TEXT;",
