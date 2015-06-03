@@ -1,5 +1,25 @@
 {% extends "base.html" %}
 {% block title %}Citation: {{ record.title|escape }}{% endblock %}
+{%- macro author_block(author, heading, sprop) -%}
+<tr>
+  <th>{{ heading }}</th>
+  <td class="author">
+  <span property="{{ sprop }}" typeof="Person">
+      <span property="name">{{ author.name|escape }}</span>
+      {{ author_links(author) }}
+  </span>
+  </td>
+</tr>
+{%- endmacro %}
+{%- macro author_links(author) -%}
+    {%- for uri in author.uri %}
+        {%- if uri.cat == 'home' %}
+      <link property="url" href="{{ uri.uri|striptags }}">
+        {%- else %}
+      <link property="sameAs" href="{{ uri.uri|striptags }}">
+        {%- endif %}
+    {%- endfor %}
+{%- endmacro %}
 {%- block content -%}
 <section class="citation" vocab="http://schema.org/" prefix="lcrel: http://id.loc.gov/vocabulary/relators/" typeof="{{ record.schema_type }}" {%
   if record.uri -%}
@@ -21,50 +41,15 @@
 {%- if record.authors|length > 0 %}
 {%-     for author in record.authors %} 
 {%-         if author.author_type == 'author': %}
-<tr>
-  <th>Author</th>
-  <td class="author">
-  <span property="author" typeof="Person">
-      <span property="name">{{ author.name|escape }}</span>
-  </span>
-  </td>
-</tr>
+    {{ author_block(author, 'Author', 'author') }}
 {%-         elif author.author_type == 'editor': %}
-<tr>
-  <th>Editor</th>
-  <td class="author">
-  <span property="editor" typeof="Person">
-      <span property="name">{{ author.name|escape }}</span>
-  </span>
-  </td>
-</tr>
+    {{ author_block(author, 'Editor', 'editor') }}
 {%-         elif author.author_type == 'series_editor': %}
-<tr>
-  <th>Series Editor</th>
-  <td class="author">
-  <span property="editor" typeof="Person">
-      <span property="name">{{ author.name|escape }}</span>
-  </span>
-  </td>
-</tr>
+    {{ author_block(author, 'Series Editor', 'editor') }}
 {%-         elif author.author_type == 'translator': %}
-<tr>
-  <th>Translator</th>
-  <td class="author">
-  <span property="contributor lcrel:trl" typeof="Person">
-      <span property="name">{{ author.name|escape }}</span>
-  </span>
-  </td>
-</tr>
+    {{ author_block(author, 'Translator', 'contributor lcrel:trl') }}
 {%-         elif author.author_type == 'contributor': %}
-<tr>
-  <th>Contributor</th>
-  <td class="author">
-  <span property="contributor" typeof="Person">
-      <span property="name">{{ author.name|escape }}</span>
-  </span>
-  </td>
-</tr>
+    {{ author_block(author, 'Contributor', 'contributor') }}
 {%-         endif %}
 {%-     endfor %}
 {%- endif %}

@@ -5,4 +5,5 @@ createdb bibliography && \
 psql -f notes.sql bibliography && \
 psql -f keywords.sql bibliography  && \
 psql -f authors.sql bibliography && \
-psql -f core.sql bibliography
+psql -f core.sql bibliography && \
+psql -f author_uris.sql bibliography

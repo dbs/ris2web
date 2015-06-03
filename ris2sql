@@ -149,7 +149,7 @@ class RISParser:
                     WHERE doc_type IN ('BOOK');""",
         ]
         self.sql_author_adds = [
-            r"""CREATE TABLE authors (id SERIAL, author_name TEXT, uri TEXT);"""
+            r"""CREATE TABLE authors (id SERIAL, author_name TEXT);"""
             r"""INSERT INTO authors (author_name)
                     SELECT DISTINCT author_name FROM cites_to_authors;""",
             r"""UPDATE cites_to_authors SET author = (
@@ -158,7 +158,7 @@ class RISParser:
                 );""",
             r"""ALTER TABLE cites_to_authors DROP COLUMN author_name;""",
             r"""CREATE VIEW authored_v AS
-                    SELECT citation, id, author_type, author_name, uri
+                    SELECT citation, id, author_type, author_name
                     FROM authors INNER JOIN cites_to_authors ON author = id;"""
         ]
     def init_core(self):

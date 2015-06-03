@@ -42,7 +42,11 @@ class Author:
         self.id = record[0]
         self.author_type = record[1]
         self.name = record[2]
-        self.uri = record[3]
+        self.uri = []
+        u = 0
+        for uri in record[3]:
+            self.uri.append({'uri': uri, 'cat': record[4][u]})
+            u += 1
 
 class RIS:
     "Models a RIS record"
@@ -180,7 +184,13 @@ def citation_html(work_id):
             FROM citations \
             WHERE id = %s", (work_id,))
         record = works.fetchone()
-        authors.execute("SELECT id, author_type, author_name, uri FROM authored_v WHERE citation = %s ORDER BY id ASC", (record[0],))
+        authors.execute(r"""SELECT id, author_type, author_name,
+                array(SELECT uri FROM author_uri_v WHERE id = av.id ORDER BY uid) AS uri,
+                array(SELECT cat FROM author_uri_v WHERE id = av.id ORDER BY uid) AS uricat
+            FROM authored_v av
+            WHERE citation = %s
+            ORDER BY id ASC""", (record[0],)
+        )
         kw.execute("SELECT keywords FROM citation_keywords WHERE citation = %s ORDER BY keywords", (record[0],))
         notes.execute("SELECT notes FROM citation_notes WHERE citation = %s ORDER BY id ASC", (record[0],))
         r = RIS(record, authors, kw.fetchall(), notes.fetchall())
