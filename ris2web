@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 "Converts a database of RIS into HTML"
 
-from flask import Flask, abort, redirect, request, render_template, url_for
+from flask import Flask, abort, redirect, request, render_template, url_for, send_from_directory
 from os.path import abspath, dirname
 import configparser
 import psycopg2
 import re
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 app.root_path = abspath(dirname(__file__))
 app.url_base = '/'
 config = configparser.ConfigParser()
@@ -378,6 +378,13 @@ def home_html():
         'languages': langs,
         'series': series
     })
+
+@app.route('/robots.txt')
+@app.route('/sitemap.xml')
+def static_from_root():
+    "Serve up static files using a root path"
+
+    return send_from_directory(app.static_folder, request.path[1:])
 
 class Facet:
     """
