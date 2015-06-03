@@ -53,10 +53,11 @@ class RISParser:
 
     # multiple authors / editors per citation
     # see http://refdb.sourceforge.net/manual/ch07.html#sect1-ris-format
+    # but Zotero exports "series_editor" as A2 and "editor" as A3, argh
     author_map = {
         'AU': 'author',
-        'A2': 'editor',
-        'A3': 'series_editor',
+        'A3': 'editor',
+        'A2': 'series_editor',
         'A4': 'translator',
         'A5': 'contributor'
     }
