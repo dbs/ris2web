@@ -80,8 +80,16 @@
   <th>Journal</th>
   <td><span property="name"><a href="{{ 
         url_for('filter_citations', facets='publication:' + record.title2)
-    }}">{{ record.title2|escape }}</a></span></td>
+    }}">{{ record.title2|escape }}</a></span>
+{%- if record.volume %}<link property="hasPart" href="#volume" />{% endif -%}
+  </td>
 </tr>
+        {%- if record.volume %}
+<tr property="isPartOf" typeof="PublicationVolume" resource="#volume">
+  <th>Volume</th>
+  <td property="volumeNumber">{{ record.volume|striptags }}</td>
+</tr>
+        {%- endif %}
     {%- endif %}
     {%- if record.pub_venue == "Book" and record.doc_type != "RPRT" and record.doc_type != "BOOK" %}
 <tr property="isPartOf" typeof="{{ record.pub_venue }}" resource="#pub_venue">
