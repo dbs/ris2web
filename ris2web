@@ -312,6 +312,12 @@ def home_html():
     types = []
     conn = get_db()
     with conn:
+        with conn.cursor() as t:
+            t.execute(r"""SELECT COUNT(*)
+                FROM citations;"""
+            )
+            total = t.fetchone()[0]
+
         with conn.cursor() as a:
             a.execute(r"""SELECT id, author_name, COUNT(*)
                 FROM authored_v
@@ -370,6 +376,7 @@ def home_html():
     conn.close()
 
     return render_template('home.html', summary={
+        'total': total,
         'authors': authors,
         'acnt': acnt,
         'pubs': pubs,
