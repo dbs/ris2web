@@ -219,6 +219,7 @@ class RISParser:
         if len(line) == 1:
             pass
         elif line[0:-1] == 'ER  - ':
+            self.store()
             self.printem()
         elif line[2:6] == '  - ':
             self.store()
