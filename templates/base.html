@@ -10,19 +10,22 @@
 <body>
 <header>
 <div class="header">
-    <a href="{{ url_for('home_html')}}"</a>Labour Studies Index</a>
+    <a href="{{ url_for('home_html')}}"</a>{{ _('Labour Studies Index') }}</a>
 </div>
 <div class="searchbox">
     <form action="{{ url_for('search_bar') }}">
-        <label>Search: <input type="search" name="s" autocomplete="on"></input></label>
-        <input type="submit" value="Submit" />
+        <label>{{ _('Search: ') }}<input type="search" name="s" autocomplete="on"></input></label>
+        <input type="submit" value="{{ _('Submit') }}" />
     </form>
 </div>
 </header>
 {% block content %}{% endblock %}
 <footer class="footer">
-A project of the <a href="http://laurentian.ca/library/">J.N. Desmarais Library</a> at <a href="http://laurentian.ca/">Laurentian University</a>.
-<a style="float:right; font-size: 60%; padding-right: 1em;" href="https://drive.google.com/open?id=1ckkrQzW4KI11U58ODsQFISlOUYI0aXWpUT9_xw019mo&authuser=1">(Presentation)</a>
+{{ _('A project of the <a href="%(liburl)s">%(libname)s</a> at <a href="%(uniurl)s">%(uniname)s</a>.',
+        liburl="http://laurentian.ca/library/", libname=_("J.N. Desmarais Library"),
+        uniurl="http://laurentian.ca/", uniname=_("Laurentian University")
+) }}
+<a style="float:right; font-size: 60%; padding-right: 1em;" href="https://drive.google.com/open?id=1ckkrQzW4KI11U58ODsQFISlOUYI0aXWpUT9_xw019mo&authuser=1">{{ _('(Presentation)') }}</a>
 </footer>
 </body>
 </html>
