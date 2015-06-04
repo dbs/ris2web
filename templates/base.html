@@ -18,6 +18,9 @@
         <input type="submit" value="Submit" />
     </form>
 </div>
+<div class="optionpane">
+    <a href="{{ url_for('switch_lang', lang=_('fr')) }}">{{ _('Français') }}</a>
+</div>
 </header>
 {% block content %}{% endblock %}
 <footer class="footer">

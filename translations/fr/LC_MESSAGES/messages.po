@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-06-04 12:55-0400\n"
+"POT-Creation-Date: 2015-06-04 13:04-0400\n"
 "PO-Revision-Date: 2015-06-04 09:22-0400\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -20,7 +20,16 @@ msgstr ""
 msgid "Labour Studies Index"
 msgstr "Indexe des études du travail"
 
-#: templates/base.html:24
+#: templates/base.html:22
+msgid "fr"
+msgstr "en"
+
+#: templates/base.html:22
+msgid "Français"
+msgstr "English"
+
+#: templates/base.html:27
+#, python-format
 msgid ""
 "A project of the <a href=\"%(liburl)s\">%(libname)s</a> at <a "
 "href=\"%(uniurl)s\">%(uniname)s</a>."
@@ -29,6 +38,7 @@ msgstr ""
 "href=\"%(uniurl)s\">%(uniname)s</a>."
 
 #: templates/home.html:6
+#, python-format
 msgid ""
 "The <em>Labour Studies Index</em> offers %s\n"
 "    citations of journal articles, books, book chapters, theses, and\n"
