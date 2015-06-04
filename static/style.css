@@ -64,6 +64,9 @@ div.searchbox label {
     color: white;
     padding-left: 1em;
 }
+div.empty {
+    padding-bottom: 5em;
+}
 @media screen and (min-device-width: 1024px) and (min-width: 960px) {
     div.searchbox {
         position: absolute;

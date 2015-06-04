@@ -230,6 +230,9 @@ def search_results(search=None, offset=0, limit=25):
 
         (end, page_next, page_prev) = pager(limit, offset, cnt)
 
+        if not cnt:
+            return render_template('search_empty.html', q=search)
+
         return render_template('search_results.html', results={
             'q': search,
             'r': s.fetchall(),
@@ -277,6 +280,9 @@ def filter_citations(facets=None, offset=0, limit=25):
         cnt = c.fetchone()[0]
 
         (end, page_next, page_prev) = pager(limit, offset, cnt)
+
+        if not cnt:
+            return render_template('search_empty.html', q=f.val)
 
         return render_template('search_results.html', results={
             'facets': facets,
