@@ -28,6 +28,11 @@ msgid ""
 "href=\"%(uniurl)s\">%(uniname)s</a>."
 msgstr ""
 
+#: templates/base.html:28
+#, python-format
+msgid "Problems with the site? Send an e-mail to %(mail)s."
+msgstr ""
+
 #: templates/home.html:6
 #, python-format
 msgid ""

@@ -28,6 +28,11 @@ msgstr ""
 "Un projet de la <a href=\"%(liburl)s\">%(libname)s</a> à <a "
 "href=\"%(uniurl)s\">%(uniname)s</a>."
 
+#: templates/base.html:28
+#, python-format
+msgid "Problems with the site? Send an e-mail to %(mail)s."
+msgstr "Problèmes avec le site? Envoy un courriel à %s(mail)s."
+
 #: templates/home.html:6
 msgid ""
 "The <em>Labour Studies Index</em> offers %s\n"
