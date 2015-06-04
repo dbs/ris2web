@@ -32,3 +32,9 @@ SELECT make_author_uri('Vosko, Leah F.', 'http://isni.org/isni/0000000114675103'
 SELECT make_author_uri('Vosko, Leah F.', 'http://people.laps.yorku.ca/people.nsf/researcherprofile?readform&shortname=lvosko', 'home');
 SELECT make_author_uri('Finkel, Alvin', 'http://viaf.org/viaf/111145526');
 SELECT make_author_uri('Finkel, Alvin', 'http://isni.org/isni/0000000115803453');
+SELECT make_author_uri('Strauss, Kendra', 'http://viaf.org/viaf/187465485');
+SELECT make_author_uri('Strauss, Kendra', 'http://isni.org/isni/0000000140783124');
+SELECT make_author_uri('Strauss, Kendra', 'http://www.labour.sfu.ca/contact_us/people/kendra_strauss/', 'home');
+SELECT make_author_uri('Fudge, Judy', 'http://viaf.org/viaf/16342050');
+SELECT make_author_uri('Fudge, Judy', 'http://isni.org/isni/0000000082026642');
+SELECT make_author_uri('Fudge, Judy', 'http://www.labour.sfu.ca/contact_us/people/kendra_strauss/', 'home');
