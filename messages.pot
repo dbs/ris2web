@@ -1,0 +1,60 @@
+#: templates/base.html:13 templates/home.html:2
+msgid "Labour Studies Index"
+msgstr ""
+
+#: templates/base.html:22
+msgid "fr"
+msgstr ""
+
+#: templates/base.html:22
+msgid "Français"
+msgstr ""
+
+#: templates/base.html:27
+#, python-format
+msgid ""
+"A project of the <a href=\"%(liburl)s\">%(libname)s</a> at <a "
+"href=\"%(uniurl)s\">%(uniname)s</a>."
+msgstr ""
+
+#: templates/home.html:6
+#, python-format
+msgid ""
+"The <em>Labour Studies Index</em> offers %s\n"
+"    citations of journal articles, books, book chapters, theses, and\n"
+"    other literature."
+msgstr ""
+
+#: templates/home.html:14
+msgid "Author"
+msgstr ""
+
+#: templates/home.html:14 templates/home.html:34 templates/home.html:54
+#: templates/home.html:74 templates/home.html:90
+msgid "Number of citations"
+msgstr ""
+
+#: templates/home.html:34
+msgid "Publication"
+msgstr ""
+
+#: templates/home.html:54
+msgid "Type"
+msgstr ""
+
+#: templates/home.html:74
+msgid "Language"
+msgstr ""
+
+#: templates/home.html:90
+msgid "Series title"
+msgstr ""
+
+#: templates/search_results.html:11 templates/search_results.html:18
+msgid "Previous"
+msgstr ""
+
+#: templates/search_results.html:15
+msgid "Next"
+msgstr ""
+

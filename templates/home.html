@@ -1,17 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Labour Studies Index{% endblock %}
+{% block title %}{{ _('Labour Studies Index') }}{% endblock %}
 {%- block content -%}
 <section class="home">
 <p>
-    The <em>Labour Studies Index</em> offers {{ summary.total }}
+    {{ _("The <em>Labour Studies Index</em> offers %s
     citations of journal articles, books, book chapters, theses, and
-    other literature.
+    other literature.", summary.total) }}
 </p>
 <section class="authors home_summary">
 <h2>Authors ({{ summary.acnt }})</h2>
 <table>
   <thead>
-    <tr><th>Author</th><th class="numcites">Number of citations</th></tr>
+    <tr><th>{{ _('Author') }}</th><th class="numcites">{{ _('Number of citations') }}</th></tr>
   </thead>
   <tbody>
 {%- for author in summary.authors %}
@@ -31,7 +31,7 @@
 <h2>Publications ({{ summary.pcnt }})</h2>
 <table>
   <thead>
-    <tr><th>Publication</th><th class="numcites">Number of citations</th></tr>
+    <tr><th>{{ _('Publication') }}</th><th class="numcites">{{ _('Number of citations') }}</th></tr>
   </thead>
   <tbody>
 {%- for pub in summary.pubs %}
@@ -51,7 +51,7 @@
 <h2>Publication types</h2>
 <table>
   <thead>
-    <tr><th>Type</th><th class="numcites">Number of citations</th></tr>
+    <tr><th>{{ _('Type') }}</th><th class="numcites">{{ _('Number of citations') }}</th></tr>
   </thead>
   <tbody>
 {%- for pub in summary.types %}
@@ -71,7 +71,7 @@
 <h2>Languages</h2>
 <table>
   <thead>
-    <tr><th>Language</th><th class="numcites">Number of citations</th></tr>
+    <tr><th>{{ _('Language') }}</th><th class="numcites">{{ _('Number of citations') }}</th></tr>
   </thead>
   <tbody>
 {%- for pub in summary.languages %}
@@ -87,7 +87,7 @@
 <h2>Series</h2>
 <table>
   <thead>
-    <tr><th>Series title</th><th class="numcites">Number of citations</th></tr>
+    <tr><th>{{ _('Series title') }}</th><th class="numcites">{{ _('Number of citations') }}</th></tr>
   </thead>
   <tbody>
 {%- for pub in summary.series %}
