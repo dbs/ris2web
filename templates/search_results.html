@@ -20,7 +20,9 @@
 {%- endif %}
 {%- for r in results.r %}
   <section class="result {{ loop.cycle('odd', 'even') }}">
+    <span class="dt">({{ r[3]|striptags }})</span>
     <a href="{{ url_for('show_citation', work_id=r[0]) }}">{{ r[1]|striptags }}</a>
+    {%- if r[2] %}, <span class="py">{{ r[2]|striptags }}</span>{% endif %}
   </section>
 {%- endfor %}
 </section>

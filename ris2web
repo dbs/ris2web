@@ -220,7 +220,7 @@ def search_results(search=None, offset=0, limit=25):
         q = parse_query(search)
         c = conn.cursor()
         c.execute("SELECT COUNT(*) FROM ris_search(%s)", (q,))
-        base_q = r"""SELECT citation, title, rank FROM ris_search(%s) LIMIT %s"""
+        base_q = r"""SELECT citation, title, pub_year, doc_type, rank FROM ris_search(%s) LIMIT %s"""
         if offset and limit:
             s.execute(base_q + " OFFSET %s", (q, limit, offset,))
         else:
@@ -272,10 +272,10 @@ def filter_citations(facets=None, offset=0, limit=25):
         c = conn.cursor()
         if f.ftype == 'author':
             c.execute("SELECT COUNT(*) FROM author_citations(%s)", (f.val,))
-            s.execute("SELECT citation, title, rank FROM author_citations(%s) ORDER BY 2", (f.val,))
+            s.execute("SELECT citation, title, pub_year, doc_type, rank FROM author_citations(%s) ORDER BY 2", (f.val,))
         else:
             c.execute("SELECT COUNT(*) FROM ris_filter(%s, %s)", (f.ftype, f.val,))
-            s.execute("SELECT citation, title, rank FROM ris_filter(%s, %s) ORDER BY 2", (f.ftype, f.val,))
+            s.execute("SELECT citation, title, pub_year, doc_type, rank FROM ris_filter(%s, %s) ORDER BY 2", (f.ftype, f.val,))
 
         cnt = c.fetchone()[0]
 
