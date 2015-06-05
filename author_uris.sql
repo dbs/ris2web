@@ -38,3 +38,12 @@ SELECT make_author_uri('Strauss, Kendra', 'http://www.labour.sfu.ca/contact_us/p
 SELECT make_author_uri('Fudge, Judy', 'http://viaf.org/viaf/16342050');
 SELECT make_author_uri('Fudge, Judy', 'http://isni.org/isni/0000000082026642');
 SELECT make_author_uri('Fudge, Judy', 'http://www.labour.sfu.ca/contact_us/people/kendra_strauss/', 'home');
+SELECT make_author_uri('Lewchuk, Wayne', 'http://viaf.org/viaf/21116188');
+SELECT make_author_uri('Lewchuk, Wayne', 'http://isni.org/isni/0000000082059022');
+SELECT make_author_uri('Lewchuk, Wayne', 'https://www.labourstudies.mcmaster.ca/people/lewchuk', 'home');
+SELECT make_author_uri('Gibbs, Holly', 'http://viaf.org/viaf/250692030');
+SELECT make_author_uri('Brogan, Peter', 'http://geography.gradstudies.yorku.ca/peter-brogan/', 'home');
+SELECT make_author_uri('Tufts, Steven', 'http://www.yorku.ca/laps/geog/profiles/s_tufts.html', 'home');
+SELECT make_author_uri('Adams, Roy J', 'http://viaf.org/viaf/76765');
+SELECT make_author_uri('Adams, Roy J', 'http://www.degroote.mcmaster.ca/profiles/roy-adams/', 'home');
+SELECT make_author_uri('Adams, Roy J', 'http://en.wikipedia.org/wiki/Roy_Adams');
