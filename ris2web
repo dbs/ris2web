@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 "Converts a database of RIS into HTML"
 
-from flask import Flask, abort, redirect, request, render_template, url_for, send_from_directory
+from flask import Flask, abort, redirect, request, render_template, url_for, \
+                    send_from_directory, session
+from flask_babelex import Babel, _
 from os.path import abspath, dirname
 import configparser
 import psycopg2
@@ -10,6 +12,7 @@ import re
 app = Flask(__name__, static_folder='static')
 app.root_path = abspath(dirname(__file__))
 app.url_base = '/'
+babel = Babel(app)
 config = configparser.ConfigParser()
 config.read(app.root_path + '/config.ini')
 
@@ -160,6 +163,24 @@ def get_db():
     except Exception as e:
         print(e)
 
+@app.before_request
+def pre_request():
+    if request.view_args and 'lang' in request.view_args:
+        lang = request.view_args['lang']
+        if lang in ['en', 'fr']:
+            g.current_lang = lang
+            request.view_args.pop('lang')
+        else:
+            return abort(404)
+    
+@babel.localeselector
+def get_language():
+    return g.get('current_lang', 'en')
+    if not session['lang']:
+        return config['lang']['default']
+    else:
+        return session['lang']
+
 @app.route('/citation/<int:work_id>')
 def show_citation(work_id=None):
     "Show the specified work"
@@ -207,7 +228,7 @@ def citation_html(work_id):
 def search_bar(search=None):
     "Show the results of a search with GET"
     s = request.args.get('s', '')
-    return redirect(url_for('search_results', search=s))
+    return redirect(url_for('search_results', search=s, lang=_('en')))
 
 @app.route('/search/<path:search>/<int:offset>/<int:limit>', methods=['GET', 'POST'])
 @app.route('/search/<path:search>', methods=['GET', 'POST'])

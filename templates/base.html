@@ -10,7 +10,7 @@
 <body>
 <header>
 <div class="header">
-    <a href="{{ url_for('home_html')}}"</a>Labour Studies Index</a>
+    <a href="{{ url_for('home_html', lang=_('en')) }}"</a>{{ _('Labour Studies Index') }}</a>
 </div>
 <div class="searchbox">
     <form action="{{ url_for('search_bar') }}">
@@ -18,10 +18,16 @@
         <input type="submit" value="Submit" />
     </form>
 </div>
+<div class="optionpane">
+    <a href="{{ url_for('home_html', lang=_('fr')) }}">{{ _('Français') }}</a>
+</div>
 </header>
 {% block content %}{% endblock %}
 <footer class="footer">
-A project of the <a href="http://laurentian.ca/library/">J.N. Desmarais Library</a> at <a href="http://laurentian.ca/">Laurentian University</a>.
+{{ _('A project of the <a href="%(liburl)s">%(libname)s</a> at <a href="%(uniurl)s">%(uniname)s</a>.',
+        liburl="http://laurentian.ca/library/", libname="J.N. Desmarais Library",
+        uniurl="http://laurentian.ca/", uniname="Laurentian University"
+) }}
 <a style="float:right; font-size: 60%; padding-right: 1em;" href="https://drive.google.com/open?id=1ckkrQzW4KI11U58ODsQFISlOUYI0aXWpUT9_xw019mo&authuser=1">(Presentation)</a>
 </footer>
 </body>

@@ -1,0 +1,81 @@
+#: templates/base.html:13 templates/home.html:2
+msgid "Labour Studies Index"
+msgstr "Indexe des études du travail"
+
+#: templates/base.html:22
+msgid "fr"
+msgstr "en"
+
+#: templates/base.html:22
+msgid "Français"
+msgstr "English"
+
+#: templates/base.html:27
+#, python-format
+msgid ""
+"A project of the <a href=\"%(liburl)s\">%(libname)s</a> at <a "
+"href=\"%(uniurl)s\">%(uniname)s</a>."
+msgstr ""
+"Un projet de la <a href=\"%(liburl)s\">%(libname)s</a> à <a "
+"href=\"%(uniurl)s\">%(uniname)s</a>."
+
+#: templates/home.html:6
+#, python-format
+msgid ""
+"The <em>Labour Studies Index</em> offers %s\n"
+"    citations of journal articles, books, book chapters, theses, and\n"
+"    other literature."
+msgstr ""
+"<em>L'indexe d'études du travail<em> offre %s\n"
+"des citations d'articles de journaux, livres, chapitres de livre, thèses "
+"et\n"
+"    autre matériaux de litérature."
+
+#: templates/home.html:14
+msgid "Author"
+msgstr "Auteur"
+
+#: templates/home.html:14 templates/home.html:34 templates/home.html:54
+#: templates/home.html:74 templates/home.html:90
+msgid "Number of citations"
+msgstr "Montant de citations"
+
+#: templates/home.html:34
+msgid "Publication"
+msgstr "Publication"
+
+#: templates/home.html:54
+msgid "Type"
+msgstr "Type"
+
+#: templates/home.html:74
+msgid "Language"
+msgstr "Langage"
+
+#: templates/home.html:90
+msgid "Series title"
+msgstr "Titre de Série"
+
+#: templates/search_results.html:11 templates/search_results.html:18
+msgid "Previous"
+msgstr "Précédante"
+
+#: templates/search_results.html:15
+msgid "Next"
+msgstr "Suivante"
+
+#~ msgid "A project of the "
+#~ msgstr "Un project de la "
+
+#~ msgid "J.N. Desmarais Library"
+#~ msgstr "Bibliothèque J.N. Desmarais"
+
+#~ msgid " at "
+#~ msgstr " à "
+
+#~ msgid "Laurentian University"
+#~ msgstr "Université Laurentienne"
+
+#~ msgid "The <em>Labour Studies Index</em> offers "
+#~ msgstr "<em>L'indexe des études du travail</em> offre "
+
