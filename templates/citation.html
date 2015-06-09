@@ -108,8 +108,13 @@
 </tr>
 {%- elif record.isbn_issn and record.pub_venue == 'Periodical' %}
 <tr resource="#pub_venue">
-  <th>ISSN</th>
-  <td property="issn">{{ record.isbn_issn|escape }}</td>
+  <th>{%- if record.doc_type_human == 'Report' -%}
+        Report number
+    {%- else -%}
+        ISSN
+    {%- endif -%}
+  </th>
+  <td{% if record.doc_type_human != 'Report' %} property="issn"{% endif %}>{{ record.isbn_issn|escape }}</td>
 </tr>
 {%- endif %}
 {%- if record.start_page %}
