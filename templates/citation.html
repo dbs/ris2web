@@ -34,7 +34,7 @@
 <tr>
   <th>{{ _('Document type') }}</th>
   <td><a href="{{
-        url_for('filter_citations', facets='doctype:' + record.doc_type_human)
+        url_for('filter_citations', facets='doctype:' + record.doc_type_human, lang=_('en'))
     }}">{{ _(record.doc_type_human|escape) }}</a></td>
 </tr>
 {%- endif %}
@@ -64,7 +64,7 @@
 <tr property="isPartOf" typeof="{{ record.pub_venue }}" resource="#pub_venue">
   <th>{{ _('Journal') }}</th>
   <td><span property="name"><a href="{{ 
-        url_for('filter_citations', facets='publication:' + record.title2)
+        url_for('filter_citations', facets='publication:' + record.title2, lang=_('en'))
     }}">{{ record.title2|escape }}</a></span>
 {%- if record.volume %}<link property="hasPart" href="#volume" />{% endif -%}
   </td>

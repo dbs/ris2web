@@ -17,6 +17,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
+#: templates/base.html:13 templates/base.html:16 templates/home.html:21
+#: templates/home.html:41 templates/home.html:61 templates/home.html:98
+msgid "en"
+msgstr ""
+
 #: templates/base.html:13 templates/home.html:2
 msgid "Labour Studies Index"
 msgstr ""
@@ -29,22 +34,30 @@ msgstr ""
 msgid "Submit"
 msgstr ""
 
-#: templates/base.html:24
+#: templates/base.html:22
+msgid "fr"
+msgstr ""
+
+#: templates/base.html:22
+msgid "Français"
+msgstr ""
+
+#: templates/base.html:27
 #, python-format
 msgid ""
 "A project of the <a href=\"%(liburl)s\">%(libname)s</a> at <a "
 "href=\"%(uniurl)s\">%(uniname)s</a>."
 msgstr ""
 
-#: templates/base.html:25
+#: templates/base.html:28
 msgid "J.N. Desmarais Library"
 msgstr ""
 
-#: templates/base.html:26
+#: templates/base.html:29
 msgid "Laurentian University"
 msgstr ""
 
-#: templates/base.html:28
+#: templates/base.html:31
 msgid "(Presentation)"
 msgstr ""
 
@@ -210,13 +223,5 @@ msgstr ""
 #: templates/search_empty.html:5
 #, python-format
 msgid "Unfortunately, your search for \"<em>%(query)s</em>\" returned no results."
-msgstr ""
-
-#: templates/search_results.html:8 templates/search_results.html:15
-msgid "Next"
-msgstr ""
-
-#: templates/search_results.html:11 templates/search_results.html:18
-msgid "Previous"
 msgstr ""
 

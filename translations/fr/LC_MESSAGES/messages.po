@@ -16,6 +16,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
+#: templates/base.html:13 templates/base.html:16 templates/home.html:21
+#: templates/home.html:41 templates/home.html:61 templates/home.html:98
+msgid "en"
+msgstr "fr"
+
 #: templates/base.html:13 templates/home.html:2
 msgid "Labour Studies Index"
 msgstr "Indexe des études du travail"
@@ -28,7 +33,15 @@ msgstr "Recherche :"
 msgid "Submit"
 msgstr "Soumettre"
 
-#: templates/base.html:24
+#: templates/base.html:22
+msgid "fr"
+msgstr "en"
+
+#: templates/base.html:22
+msgid "Français"
+msgstr "English"
+
+#: templates/base.html:27
 #, python-format
 msgid ""
 "A project of the <a href=\"%(liburl)s\">%(libname)s</a> at <a "
@@ -37,15 +50,15 @@ msgstr ""
 "Un projet de la <a href=\"%(liburl)s\">%(libname)s</a> à l'<a "
 "href=\"%(uniurl)s\">%(uniname)s</a>."
 
-#: templates/base.html:25
+#: templates/base.html:28
 msgid "J.N. Desmarais Library"
 msgstr "Bibliothèque J.N. Desmarais"
 
-#: templates/base.html:26
+#: templates/base.html:29
 msgid "Laurentian University"
 msgstr "Université Laurentienne"
 
-#: templates/base.html:28
+#: templates/base.html:31
 msgid "(Presentation)"
 msgstr "(Présentation)"
 
@@ -219,14 +232,6 @@ msgstr ""
 "Malheureusement, votre recherche \"<em>%(query)s</em>\" n'a produit aucun"
 " résultat."
 
-#: templates/search_results.html:8 templates/search_results.html:15
-msgid "Next"
-msgstr "Suivante"
-
-#: templates/search_results.html:11 templates/search_results.html:18
-msgid "Previous"
-msgstr "Précédante"
-
 #~ msgid "A project of the "
 #~ msgstr "Un project de la "
 
@@ -241,4 +246,10 @@ msgstr "Précédante"
 
 #~ msgid "The <em>Labour Studies Index</em> offers "
 #~ msgstr "<em>L'indexe des études du travail</em> offre "
+
+#~ msgid "Next"
+#~ msgstr "Suivante"
+
+#~ msgid "Previous"
+#~ msgstr "Précédante"
 
