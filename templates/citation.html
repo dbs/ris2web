@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Citation: {{ record.title|escape }}{% endblock %}
+{% block title %}{{ _('Citation: ') }}{{ record.title|escape }}{% endblock %}
 {%- macro author_block(author, heading, sprop) -%}
 <tr>
   <th>{{ heading }}</th>
@@ -32,13 +32,13 @@
 <tbody>
 {%- if record.doc_type_human %}
 <tr>
-  <th>Document type</th>
+  <th>{{ _('Document type') }}</th>
   <td><a href="{{
-        url_for('filter_citations', facets='doctype:' + record.doc_type_human)
-    }}">{{ record.doc_type_human|escape}}</a></td>
+        url_for('filter_citations', facets='doctype:' + record.doc_type_human, lang=_('en'))
+    }}">{{ _(record.doc_type_human|escape) }}</a></td>
 </tr>
 {%- endif %}
-{%- if record.authors|length > 0 %}
+{%- if record.authors|length < 0 %}
 {%-     for author in record.authors %} 
 {%-         if author.author_type == 'author': %}
     {{ author_block(author, 'Author', 'author') }}
@@ -55,37 +55,37 @@
 {%- endif %}
 {%- if record.doc_type == 'THES' and record.work_type %}
 <tr>
-    <th>Degree</th>
+    <th>{{ _('Degree') }}</th>
     <td>{{ record.work_type|striptags }}</td>
 </tr>
 {%- endif %}
 {%- if record.doc_type != "THES" %}
     {%- if record.pub_venue == "Periodical" and record.doc_type != "RPRT" %}
 <tr property="isPartOf" typeof="{{ record.pub_venue }}" resource="#pub_venue">
-  <th>Journal</th>
+  <th>{{ _('Journal') }}</th>
   <td><span property="name"><a href="{{ 
-        url_for('filter_citations', facets='publication:' + record.title2)
+        url_for('filter_citations', facets='publication:' + record.title2, lang=_('en'))
     }}">{{ record.title2|escape }}</a></span>
 {%- if record.volume %}<link property="hasPart" href="#volume" />{% endif -%}
   </td>
 </tr>
         {%- if record.volume %}
 <tr property="isPartOf" typeof="PublicationVolume" resource="#volume">
-  <th>Volume</th>
+  <th>{{ _('Volume') }}</th>
   <td property="volumeNumber">{{ record.volume|striptags }}</td>
 </tr>
         {%- endif %}
     {%- endif %}
     {%- if record.pub_venue == "Book" and record.doc_type != "RPRT" and record.doc_type != "BOOK" %}
 <tr property="isPartOf" typeof="{{ record.pub_venue }}" resource="#pub_venue">
-  <th>Book</th>
+  <th>{{ _('Book') }}</th>
   <td><span property="name">{{ record.title2|escape }}</span></td>
 </tr>
     {%- endif %}
 {%- endif %}
 {%- if record.publisher %}
 <tr resource="#pub_venue">
-  <th>Publisher</th>
+  <th>{{ _('Publisher') }}</th>
   <td><span property="publisher" typeof="Organization">
         <span property="name">{{ record.publisher }}</span>;
         {%- if record.pub_place %}
@@ -97,21 +97,21 @@
 {%- endif %}
 {%- if record.pub_date_human %}
 <tr>
-  <th>Date</th>
+  <th>{{ _('Date') }}</th>
   <td property="datePublished">{{ record.pub_date_human|escape|trim }}</td>
 </tr>
 {%- endif %}
 {%- if record.isbn_issn and record.pub_venue == 'Book' %}
 <tr{% if record.schema_type == "Article"%} resource="#pub_venue"{% endif %}>
-  <th>ISBN</th>
+  <th>{{ _('ISBN') }}</th>
   <td property="isbn">{{ record.isbn_issn|escape }}</td>
 </tr>
 {%- elif record.isbn_issn and record.pub_venue == 'Periodical' %}
 <tr resource="#pub_venue">
   <th>{%- if record.doc_type_human == 'Report' -%}
-        Report number
+        {{ _('Report number') }}
     {%- else -%}
-        ISSN
+        {{ _('ISSN') }}
     {%- endif -%}
   </th>
   <td{% if record.doc_type_human != 'Report' %} property="issn"{% endif %}>{{ record.isbn_issn|escape }}</td>
@@ -119,19 +119,19 @@
 {%- endif %}
 {%- if record.start_page %}
 <tr>
-  <th>Pages</th>
+  <th>{{ _('Pages') }}</th>
   <td property="pagination"><span property="pageStart">{{ record.start_page|escape }}</span>{% if record.end_page %}-<span property="pageEnd">{{ record.end_page|escape }}</span>{% endif %}</td>
 </tr>
 {%- endif %}
 {%- if record.url %}
 <tr>
-  <th>URL</th>
+  <th>{{ _('URL') }}</th>
   <td><a href="{{ record.url|escape }}" property="url">{{ record.url|escape }}</a></td>
 </tr>
 {%- endif %}
 {%- if record.kw and 0 %}
 <tr>
-  <th>Keywords</th>
+  <th>{{ _('Keywords') }}</th>
   <td>
   {%- for kw in record.kw %} 
     <span property="about">{{ kw.0|escape }}</span>{% if loop.revindex0 %}, {% endif %}
@@ -142,7 +142,7 @@
 </tbody>
 </table>
 {%- if record.abstract %}
-<h2>Abstract</h2>
+<h2>{{ _('Abstract') }}</h2>
   <p class="abstract" property="description">{{ record.abstract|escape }}</p>
 {%- endif %}
 {%- if record.notes %}

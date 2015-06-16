@@ -1,0 +1,227 @@
+# Translations template for PROJECT.
+# Copyright (C) 2015 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2015.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2015-06-11 12:56-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 1.3\n"
+
+#: templates/base.html:13 templates/base.html:16 templates/home.html:21
+#: templates/home.html:41 templates/home.html:61 templates/home.html:98
+msgid "en"
+msgstr ""
+
+#: templates/base.html:13 templates/home.html:2
+msgid "Labour Studies Index"
+msgstr ""
+
+#: templates/base.html:17
+msgid "Search: "
+msgstr ""
+
+#: templates/base.html:18
+msgid "Submit"
+msgstr ""
+
+#: templates/base.html:22
+msgid "fr"
+msgstr ""
+
+#: templates/base.html:22
+msgid "Français"
+msgstr ""
+
+#: templates/base.html:27
+#, python-format
+msgid ""
+"A project of the <a href=\"%(liburl)s\">%(libname)s</a> at <a "
+"href=\"%(uniurl)s\">%(uniname)s</a>."
+msgstr ""
+
+#: templates/base.html:28
+msgid "J.N. Desmarais Library"
+msgstr ""
+
+#: templates/base.html:29
+msgid "Laurentian University"
+msgstr ""
+
+#: templates/base.html:31
+msgid "(Presentation)"
+msgstr ""
+
+#: templates/citation.html:2
+msgid "Citation: "
+msgstr ""
+
+#: templates/citation.html:35
+msgid "Document type"
+msgstr ""
+
+#: templates/citation.html:58
+msgid "Degree"
+msgstr ""
+
+#: templates/citation.html:65 templates/messages.html:3
+msgid "Journal"
+msgstr ""
+
+#: templates/citation.html:74
+msgid "Volume"
+msgstr ""
+
+#: templates/citation.html:81 templates/messages.html:4
+msgid "Book"
+msgstr ""
+
+#: templates/citation.html:88
+msgid "Publisher"
+msgstr ""
+
+#: templates/citation.html:100
+msgid "Date"
+msgstr ""
+
+#: templates/citation.html:106
+msgid "ISBN"
+msgstr ""
+
+#: templates/citation.html:112
+msgid "Report number"
+msgstr ""
+
+#: templates/citation.html:114
+msgid "ISSN"
+msgstr ""
+
+#: templates/citation.html:122
+msgid "Pages"
+msgstr ""
+
+#: templates/citation.html:128
+msgid "URL"
+msgstr ""
+
+#: templates/citation.html:134
+msgid "Keywords"
+msgstr ""
+
+#: templates/citation.html:145
+msgid "Abstract"
+msgstr ""
+
+#: templates/home.html:6
+#, python-format
+msgid ""
+"The <em>Labour Studies Index</em> offers %(num)d\n"
+"    citations of journal articles, books, book chapters, theses, and\n"
+"    other literature."
+msgstr ""
+
+#: templates/home.html:11
+#, python-format
+msgid "Authors (%(count)d)"
+msgstr ""
+
+#: templates/home.html:14
+msgid "Author"
+msgstr ""
+
+#: templates/home.html:14 templates/home.html:34 templates/home.html:54
+#: templates/home.html:74 templates/home.html:90
+msgid "Number of citations"
+msgstr ""
+
+#: templates/home.html:31
+#, python-format
+msgid "Publications (%(count)d)"
+msgstr ""
+
+#: templates/home.html:34
+msgid "Publication"
+msgstr ""
+
+#: templates/home.html:51
+msgid "Publication types"
+msgstr ""
+
+#: templates/home.html:54
+msgid "Type"
+msgstr ""
+
+#: templates/home.html:71
+msgid "Languages"
+msgstr ""
+
+#: templates/home.html:74
+msgid "Language"
+msgstr ""
+
+#: templates/home.html:87
+msgid "Series"
+msgstr ""
+
+#: templates/home.html:90
+msgid "Series title"
+msgstr ""
+
+#: templates/messages.html:5
+msgid "Book chapter"
+msgstr ""
+
+#: templates/messages.html:6
+msgid "Thesis"
+msgstr ""
+
+#: templates/messages.html:7
+msgid "Web Page"
+msgstr ""
+
+#: templates/messages.html:8
+msgid "Report"
+msgstr ""
+
+#: templates/messages.html:9
+msgid "Magazine"
+msgstr ""
+
+#: templates/messages.html:10
+msgid "Newspaper"
+msgstr ""
+
+#: templates/messages.html:11
+msgid "Movie"
+msgstr ""
+
+#: templates/messages.html:12
+msgid "General"
+msgstr ""
+
+#: templates/messages.html:13
+msgid "Video"
+msgstr ""
+
+#: templates/messages.html:14
+msgid "Map"
+msgstr ""
+
+#: templates/search_empty.html:2 templates/search_results.html:2
+msgid "Search results"
+msgstr ""
+
+#: templates/search_empty.html:5
+#, python-format
+msgid "Unfortunately, your search for \"<em>%(query)s</em>\" returned no results."
+msgstr ""
+

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% block title %}Search results{% endblock %}
+{% block title %}{{ _('Search results') }}{% endblock %}
 {%- block content -%}
 <section class="results">
-<div class="empty">Unfortunately, your search for "<em>{{ q|striptags }}</em>" returned no results.</div>
+<div class="empty">{{ _('Unfortunately, your search for "<em>%(query)s</em>" returned no results.', query=q|striptags) }}</div>
 </section>
 {%- endblock %}

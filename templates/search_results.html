@@ -1,27 +1,27 @@
 {% extends "base.html" %}
-{% block title %}Search results{% endblock %}
+{% block title %}{{ _('Search results') }}{% endblock %}
 {%- block content -%}
 <section class="results">
 <span class="result_count">{{ results.start }} - {{ results.end }} of {{ results.cnt }}</span>
 {%- if results.q %}
     {%- if results.page_next %}
-    <span class="pager"><a href="{{ url_for('search_results', search=results.q, offset=results.page_next, limit=results.limit)}}">Next</a></span>
+    <span class="pager"><a href="{{ url_for('search_results', search=results.q, offset=results.page_next, limit=results.limit, lang=_('en'))}}">{{ _('Next') }}</a></span>
     {%- endif %}
     {%- if results.page_prev %}
-    <span class="pager"><a href="{{ url_for('search_results', search=results.q, offset=results.page_prev, limit=results.limit)}}">Previous</a></span>
+    <span class="pager"><a href="{{ url_for('search_results', search=results.q, offset=results.page_prev, limit=results.limit, lang=_('en'))}}">{{ _('Previous') }}</a></span>
     {%- endif %}
 {%- elif results.facets %}
     {%- if results.page_next %}
-    <span class="pager"><a href="{{ url_for('filter_citations', facets=results.facets, offset=results.page_next, limit=results.limit)}}">Next</a></span>
+    <span class="pager"><a href="{{ url_for('filter_citations', facets=results.facets, offset=results.page_next, limit=results.limit, lang=_('en'))}}">{{ _('Next') }}</a></span>
     {%- endif %}
     {%- if results.page_prev %}
-    <span class="pager"><a href="{{ url_for('filter_citations', facets=results.facets, offset=results.page_prev, limit=results.limit)}}">Previous</a></span>
+    <span class="pager"><a href="{{ url_for('filter_citations', facets=results.facets, offset=results.page_prev, limit=results.limit, lang=_('en'))}}">{{ _('Previous') }}</a></span>
     {%- endif %}
 {%- endif %}
 {%- for r in results.r %}
   <section class="result {{ loop.cycle('odd', 'even') }}">
     <span class="dt">({{ r[3]|striptags }})</span>
-    <a href="{{ url_for('show_citation', work_id=r[0]) }}">{{ r[1]|striptags }}</a>
+    <a href="{{ url_for('show_citation', work_id=r[0], lang=_('en')) }}">{{ r[1]|striptags }}</a>
     {%- if r[2] %}, <span class="py">{{ r[2]|striptags }}</span>{% endif %}
   </section>
 {%- endfor %}
