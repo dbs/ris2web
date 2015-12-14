@@ -339,6 +339,11 @@ def parse_query(q):
     q = re.sub(r'([^&|!]) ([^&|!])', r'\1 & \2', q)
     return q
 
+@app.route('/')
+def index():
+    "Redirect to the English page, if given no language"
+    return redirect(url_for('home_html', lang='en'))
+
 @app.route('/<lang>/')
 def home_html():
     "Home page"
