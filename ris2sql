@@ -114,6 +114,8 @@ class RISParser:
                 WHERE title2 IN ('Labour/Le Travail');""",
             r"""UPDATE citations SET language = 'English'
                 WHERE language IN ('eng', 'en', 'en_ca');""",
+            r"""UPDATE citations SET language = 'English'
+                WHERE language IS NULL;""",
             r"""UPDATE citations SET language = 'French'
                 WHERE language IN ('fr', 'fre');""",
             r"""UPDATE citations SET language = 'Spanish'
