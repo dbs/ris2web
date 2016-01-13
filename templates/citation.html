@@ -38,7 +38,7 @@
     }}">{{ _(record.doc_type_human|escape) }}</a></td>
 </tr>
 {%- endif %}
-{%- if record.authors|length < 0 %}
+{%- if record.authors|length > 0 %}
 {%-     for author in record.authors %} 
 {%-         if author.author_type == 'author': %}
     {{ author_block(author, 'Author', 'author') }}
