@@ -1,0 +1,276 @@
+#!/usr/bin/env python3
+
+"""
+pip install pyzotero
+
+We're going to start tracking the citations by their zotero key:
+
+    ALTER TABLE citations ADD COLUMN zotero_key TEXT;
+ 
+This will enable us to insert the new citations, as well as a new
+zotero_cites_to_authors table:
+
+    CREATE TABLE zotero_cites_to_authors (zotero_key TEXT, author_type TEXT, name TEXT, first_name TEXT, last_name TEXT, author_id INT);
+
+Then we'll be able to normalize the authors with the existing authors table
+(updating author_id), then map the authors to citations by ID in the
+cites_to_author table.
+
+We also want to automatically assign IDs for the citations (6533 is the latest):
+    CREATE SEQUENCE citations_id_seq;
+    SELECT SETVAL('citations_id_seq', MAX(id) + 1) FROM citations;
+    ALTER TABLE citations ALTER COLUMN id SET DEFAULT nextval('citations_id_seq');
+
+# zotero.Zotero.items returns a data list as follows:
+{
+    "data": {
+        "DOI": "10.7202/027620ar",
+        "ISSN": "0034-379X, 1703-8138",
+        "abstractNote": "",
+        "accessDate": "2016-11-24T22:09:56Z",
+        "archive": "",
+        "archiveLocation": "",
+        "callNumber": "",
+        "collections": [
+            "GAZFJMGC"
+        ],
+        "creators": [
+            {
+                "creatorType": "author",
+                "firstName": "John H. G.",
+                "lastName": "Crispo"
+            }
+        ],
+        "date": "1965",
+        "dateAdded": "2016-11-24T22:09:56Z",
+        "dateModified": "2016-11-24T22:10:18Z",
+        "extra": "",
+        "issue": "4",
+        "itemType": "journalArticle",
+        "journalAbbreviation": "",
+        "key": "RWDBFFEU",
+        "language": "en",
+        "libraryCatalog": "CrossRef",
+        "pages": "700-706",
+        "publicationTitle": "Relations industrielles",
+        "relations": {},
+        "rights": "",
+        "series": "",
+        "seriesText": "",
+        "seriesTitle": "",
+        "shortTitle": "Looking Back and Looking Forward",
+        "tags": [],
+        "title": "Looking Back and Looking Forward : Can Organized Labour Stand the Test of Time?",
+        "url": "http://id.erudit.org/iderudit/027620ar",
+        "version": 14527,
+        "volume": "20"
+    },
+    "key": "RWDBFFEU",
+    "library": {
+        "id": 290262,
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/groups/canadian_labour_studies_bibliography",
+                "type": "text/html"
+            }
+        },
+        "name": "Canadian Labour Studies Bibliography",
+        "type": "group"
+    },
+    "links": {
+        "alternate": {
+            "href": "https://www.zotero.org/groups/canadian_labour_studies_bibliography/items/RWDBFFEU",
+            "type": "text/html"
+        },
+        "self": {
+            "href": "https://api.zotero.org/groups/290262/items/RWDBFFEU",
+            "type": "application/json"
+        }
+    },
+    "meta": {
+        "createdByUser": {
+            "id": 3393813,
+            "links": {
+                "alternate": {
+                    "href": "https://www.zotero.org/erinvader",
+                    "type": "text/html"
+                }
+            },
+            "name": "",
+            "username": "ErinVader"
+        },
+        "creatorSummary": "Crispo",
+        "numChildren": 0,
+        "parsedDate": "1965"
+    },
+    "version": 14527
+}
+"""
+
+from pyzotero import zotero
+import json
+import psycopg2
+import configparser
+from os.path import abspath, dirname
+
+class ZoteroParser:
+    """Read a Zotero item and parse it into its unique fields
+    
+    Currently suffers a bit too much from its RIS background
+    """
+
+    # We expect each of these fields to appear only once for a given citation
+    core_map = {
+        'abstractNote': 'abstract',
+        'date': 'pub_date',
+        #'date': 'pub_year',
+        'libraryCatalog': 'pub_database',
+        'pages': 'start_page',
+        #'pages': 'end_page',
+        'language': 'language',
+        'callNumber': 'call_number',
+        'place': 'pub_place', # book
+        'thesisType': 'work_type',
+        'publicationTitle': 'pub_title',
+        'publisher': 'publisher', # book
+        'itemType': 'doc_type', # type of the cited document
+        'title': 'title',
+        'series': 'title2',
+        #'series': 'title3',
+        'journalAbbreviation': 'alternate_title', # often abbrev. journal or book title
+        'shortTitle': 'short_title', # often abbrev. journal or book title
+        'DOI': 'doi',
+        'url': 'url',
+        #'url': 'local_url',
+        'ISSN': 'isbn_issn',
+        'edition': 'edition',
+        'series_number': 'id_number',
+        'issue': 'issue_number',
+        'volume': 'volume',
+        'accessDate': 'access_date',
+        'rights': 'rights',
+        'key': 'zotero_key'
+    }
+
+    # multiple authors / editors per citation
+    # see http://refdb.sourceforge.net/manual/ch07.html#sect1-ris-format
+    # but Zotero exports "series_editor" as A2 and "editor" as A3, argh
+    author_map = {
+        'AU': 'author',
+        'A3': 'editor',
+        'A2': 'series_editor',
+        'A4': 'translator',
+        'A5': 'contributor'
+    }
+
+    def __init__(self, item, config):
+        "Parse it up"
+
+        self.cite = {}
+        self.authors = []
+        self.config = config
+        self.get_db()
+        if item['data']['itemType'] == 'attachment':
+            return
+        for zot, ris in ZoteroParser.core_map.items():
+            if zot in item['data']:
+                z = item['data'][zot]
+                if z == "":
+                    self.cite[ris] = None
+                else:
+                    self.cite[ris] = z
+            else:
+                self.cite[ris] = None
+
+        if 'creators' in item['data']:
+            self.authorship(item)
+
+        print(json.dumps(self.cite, sort_keys=True, indent=4))
+        #print(json.dumps(self.authors))
+
+    def authorship(self, item):
+        "Parse out different types of authors"
+
+        for a in item['data']['creators']:
+            #print("\t%s" % (json.dumps(a)))
+            if 'firstName' in a:
+                self.authors.append({'creator': a['creatorType'], 'name': "%s, %s" % (a['lastName'], a['firstName']), 'first_name': a['firstName'], 'last_name': a['lastName']})
+            else:
+                self.authors.append({'creator': a['creatorType'], 'name': a['name']})
+
+    def insert_citations(self):
+        cur = self.conn.cursor()
+        cur.execute("""
+INSERT INTO citations(abstract, access_date, alternate_title, call_number, doc_type, doi, edition, id_number, isbn_issn, issue_number, language, pub_database, pub_date, publisher, pub_place, pub_title, short_title, start_page, title, title2, url, volume, work_type, zotero_key)
+VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
+            (self.cite['abstract'], self.cite['access_date'], self.cite['alternate_title'], self.cite['call_number'], self.cite['doc_type'], self.cite['doi'], self.cite['edition'], self.cite['id_number'], self.cite['isbn_issn'], self.cite['issue_number'], self.cite['language'], self.cite['pub_database'], self.cite['pub_date'], self.cite['pub_title'], self.cite['publisher'], self.cite['pub_place'], self.cite['short_title'], self.cite['start_page'], self.cite['title'], self.cite['title2'], self.cite['url'], self.cite['volume'], self.cite['work_type'], self.cite['zotero_key'])
+        )
+        self.conn.commit()
+        cur.close()
+
+    def insert_authors(self):
+        cur = self.conn.cursor()
+        for author in self.authors:
+            if 'last_name' in author:
+                cur.execute("INSERT INTO zotero_cites_to_authors(zotero_key, author_type, name, last_name, first_name) VALUES (%s, %s, %s, %s, %s)", (self.cite['zotero_key'], author['creator'], author['name'], author['last_name'], author['first_name']))
+            else:
+                cur.execute("INSERT INTO zotero_cites_to_authors(zotero_key, author_type, name) VALUES (%s, %s, %s)", (self.cite['zotero_key'], author['creator'], author['name']))
+        self.conn.commit()
+        cur.close()
+
+    def get_db(self):
+        """
+        Get a database connection
+
+        With a host attribute in the mix, you could connect to a remote
+        database, but then you would have to set up .pgpass or add a
+        password parameter, so let's keep it simple.
+        """
+
+        try:
+            self.conn = psycopg2.connect(
+                database=self.config['database']['dbname'],
+                user=self.config['database']['dbuser']
+            )
+        except Exception as e:
+            print(e)
+
+def main():
+    "Integrate the latest updates to the database"
+
+    config = configparser.ConfigParser()
+    config.read(abspath(dirname(__file__)) + '/config.ini')
+
+    # Access our group
+    zot = zotero.Zotero(config['zotero']['group'], 'group', config['zotero']['key'])
+
+    # list_collections(zot)
+    items = zot.items(sort='dateModified', direction='desc')
+    for i in items:
+        #print(json.dumps(i, sort_keys=True, indent=4))
+        if i['data']['itemType'] == 'attachment':
+            continue
+        z = ZoteroParser(i, config)
+        z.insert_authors()
+        z.insert_citations()
+        z.conn.close()
+
+def list_collections(zot):
+    "We have a lot of collections"
+    c = zot.collections()
+    x = 0
+    for i in c:
+        x += 1
+        print(json.dumps(i, sort_keys=True, indent=4))
+    c = zot.collections(start=x)
+    for i in c:
+        x += 1
+        print(json.dumps(i, sort_keys=True, indent=4))
+    c = zot.collections(start=x)
+    for i in c:
+        x += 1
+        print(json.dumps(i, sort_keys=True, indent=4))
+    print(x)
+
+if __name__ == '__main__':
+    main()
