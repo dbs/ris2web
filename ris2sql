@@ -100,7 +100,7 @@ class RISParser:
                 $$ LANGUAGE PLPGSQL;""",
             r"""CREATE OR REPLACE FUNCTION author_citations(author INT)
                 RETURNS SETOF search_result AS $$
-                    SELECT c.id, c.title, substring(c.pub_date from 1 for 4)::INT AS pub_year, doc_type, 0::real
+                    SELECT DISTINCT c.id, c.title, substring(c.pub_date from 1 for 4)::INT AS pub_year, doc_type, 0::real
                     FROM citations c
                         INNER JOIN authored_v a ON c.id = a.citation
                     WHERE a.id = author
