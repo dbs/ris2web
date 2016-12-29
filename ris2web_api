@@ -28,6 +28,10 @@ After loading we'll need to adjust some of the data:
     UPDATE citations SET title2 = publisher WHERE doc_type = 'JOUR' AND publisher IS NOT NULL;
     UPDATE citations SET publisher = NULL WHERE doc_type = 'JOUR' AND publisher IS NOT NULL;
 
+    UPDATE zotero_cites_to_authors SET author_id = a.id FROM authors a WHERE a.author_name = name;
+    INSERT INTO authors (author_name) SELECT DISTINCT name FROM zotero_cites_to_authors WHERE author_id IS NULL;
+    UPDATE zotero_cites_to_authors SET author_id = a.id FROM authors a WHERE a.author_name = name AND author_id IS NULL;
+
 # zotero.Zotero.items returns a data list as follows:
 {
     "data": {
