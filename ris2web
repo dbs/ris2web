@@ -7,6 +7,7 @@ import flask
 from flask_babelex import Babel, _
 from os.path import abspath, dirname
 import configparser
+import logging
 import psycopg2
 import re
 
@@ -218,7 +219,7 @@ def citation_html(work_id):
         kw.close()
         notes.close()
     except Exception as e:
-        print(e)
+        logging.exception('Failed to show citation %d' % (work_id))
         return abort(500)
 
 @app.route('/<lang>/search', methods=['GET', 'POST'])
@@ -262,7 +263,7 @@ def search_results(search=None, offset=0, limit=25):
             'page_prev': page_prev
         })
     except Exception as e:
-        print(e)
+        logging.exception('Failed to show search results')
         return abort(500)
 
 def pager(limit, offset, cnt):
@@ -313,7 +314,7 @@ def filter_citations(facets=None, offset=0, limit=25):
             'page_prev': page_prev
         })
     except Exception as e:
-        print(e)
+        logging.exception('Failed to filter citations')
         return abort(500)
 
 def risdate2human(date):
@@ -428,7 +429,7 @@ def home_html():
             'series': series
         })
     except Exception as e:
-        print(e)
+        logging.exception('Failed to show home page')
         abort(500)
 
 @app.route('/<lang>/robots.txt')
