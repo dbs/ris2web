@@ -6,6 +6,7 @@ pip install pyzotero
 We're going to start tracking the citations by their zotero key:
 
     ALTER TABLE citations ADD COLUMN zotero_key TEXT;
+    ALTER TABLE citations ADD COLUMN source JSONB;
  
 This will enable us to insert the new citations, as well as a new
 zotero_cites_to_authors table:
@@ -16,10 +17,16 @@ Then we'll be able to normalize the authors with the existing authors table
 (updating author_id), then map the authors to citations by ID in the
 cites_to_author table.
 
-We also want to automatically assign IDs for the citations (6533 is the latest):
+We also want to automatically assign IDs for the new citations (6533 is the latest):
     CREATE SEQUENCE citations_id_seq;
     SELECT SETVAL('citations_id_seq', MAX(id) + 1) FROM citations;
     ALTER TABLE citations ALTER COLUMN id SET DEFAULT nextval('citations_id_seq');
+
+After loading we'll need to adjust some of the data:
+    UPDATE citations SET doc_type = 'JOUR' WHERE doc_type = 'journalArticle';
+    UPDATE citations SET pub_date = regexp_replace(pub_date, E'^(\\D+) (\\d{4})', E'\\2\/\/\/\\1') WHERE pub_date ~ E'^\\D';
+    UPDATE citations SET title2 = publisher WHERE doc_type = 'JOUR' AND publisher IS NOT NULL;
+    UPDATE citations SET publisher = NULL WHERE doc_type = 'JOUR' AND publisher IS NOT NULL;
 
 # zotero.Zotero.items returns a data list as follows:
 {
@@ -135,8 +142,9 @@ class ZoteroParser:
         'publisher': 'publisher', # book
         'itemType': 'doc_type', # type of the cited document
         'title': 'title',
-        'series': 'title2',
+        #'series': 'title2',
         #'series': 'title3',
+        'series': 'series',
         'journalAbbreviation': 'alternate_title', # often abbrev. journal or book title
         'shortTitle': 'short_title', # often abbrev. journal or book title
         'DOI': 'doi',
@@ -144,7 +152,7 @@ class ZoteroParser:
         #'url': 'local_url',
         'ISSN': 'isbn_issn',
         'edition': 'edition',
-        'series_number': 'id_number',
+        'seriesNumber': 'id_number',
         'issue': 'issue_number',
         'volume': 'volume',
         'accessDate': 'access_date',
@@ -186,6 +194,8 @@ class ZoteroParser:
             self.authorship(item)
 
         print(json.dumps(self.cite, sort_keys=True, indent=4))
+
+        self.cite['source'] = json.dumps(item['data'])
         #print(json.dumps(self.authors))
 
     def authorship(self, item):
@@ -201,9 +211,9 @@ class ZoteroParser:
     def insert_citations(self):
         cur = self.conn.cursor()
         cur.execute("""
-INSERT INTO citations(abstract, access_date, alternate_title, call_number, doc_type, doi, edition, id_number, isbn_issn, issue_number, language, pub_database, pub_date, publisher, pub_place, pub_title, short_title, start_page, title, title2, url, volume, work_type, zotero_key)
-VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
-            (self.cite['abstract'], self.cite['access_date'], self.cite['alternate_title'], self.cite['call_number'], self.cite['doc_type'], self.cite['doi'], self.cite['edition'], self.cite['id_number'], self.cite['isbn_issn'], self.cite['issue_number'], self.cite['language'], self.cite['pub_database'], self.cite['pub_date'], self.cite['pub_title'], self.cite['publisher'], self.cite['pub_place'], self.cite['short_title'], self.cite['start_page'], self.cite['title'], self.cite['title2'], self.cite['url'], self.cite['volume'], self.cite['work_type'], self.cite['zotero_key'])
+INSERT INTO citations(abstract, access_date, alternate_title, call_number, doc_type, doi, edition, id_number, isbn_issn, issue_number, language, pub_database, pub_date, publisher, pub_place, pub_title, short_title, start_page, title, series, url, volume, work_type, zotero_key, source)
+VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
+            (self.cite['abstract'], self.cite['access_date'], self.cite['alternate_title'], self.cite['call_number'], self.cite['doc_type'], self.cite['doi'], self.cite['edition'], self.cite['id_number'], self.cite['isbn_issn'], self.cite['issue_number'], self.cite['language'], self.cite['pub_database'], self.cite['pub_date'], self.cite['pub_title'], self.cite['publisher'], self.cite['pub_place'], self.cite['short_title'], self.cite['start_page'], self.cite['title'], self.cite['series'], self.cite['url'], self.cite['volume'], self.cite['work_type'], self.cite['zotero_key'], self.cite['source'])
         )
         self.conn.commit()
         cur.close()
