@@ -48,6 +48,7 @@ After loading we'll need to adjust some of the data; note that we're losing some
 
 We need to take care of notes during processing! Here's a post-loading hacky fix:
     INSERT INTO public.citation_notes (citation, notes) SELECT c.id, n.source::json->>'note' FROM citations n INNER JOIN citations c ON c.zotero_key = n.zotero_key WHERE n.doc_type = 'note' AND n.source::json->>'note' IS NOT NULL;
+    DELETE FROM citations WHERE doc_type = 'note';
 
 # zotero.Zotero.items returns a data list as follows:
 {
