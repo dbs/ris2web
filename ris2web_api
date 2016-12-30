@@ -22,8 +22,22 @@ We also want to automatically assign IDs for the new citations (6533 is the late
     SELECT SETVAL('citations_id_seq', MAX(id) + 1) FROM citations;
     ALTER TABLE citations ALTER COLUMN id SET DEFAULT nextval('citations_id_seq');
 
-After loading we'll need to adjust some of the data:
+After loading we'll need to adjust some of the data; note that we're losing some granularity
     UPDATE citations SET doc_type = 'JOUR' WHERE doc_type = 'journalArticle';
+    UPDATE citations SET doc_type = 'BOOK' WHERE doc_type = 'book';
+    UPDATE citations SET doc_type = 'CHAP' WHERE doc_type = 'bookSection';
+    UPDATE citations SET doc_type = 'THES' WHERE doc_type = 'thesis';
+    UPDATE citations SET doc_type = 'RPRT' WHERE doc_type = 'report';
+    UPDATE citations SET doc_type = 'ELEC' WHERE doc_type = 'webpage';
+    UPDATE citations SET doc_type = 'JOUR' WHERE doc_type = 'magazineArticle';
+    UPDATE citations SET doc_type = 'JOUR' WHERE doc_type = 'newspaperArticle';
+    UPDATE citations SET doc_type = 'MPCT' WHERE doc_type = 'film';
+    UPDATE citations SET doc_type = 'VIDEO' WHERE doc_type = 'videoRecording';
+    UPDATE citations SET doc_type = 'MAP' WHERE doc_type = 'map';
+    UPDATE citations SET doc_type = 'ELEC' WHERE doc_type = 'blogPost';
+    UPDATE citations SET doc_type = 'JOUR' WHERE doc_type = 'encyclopediaArticle';
+    UPDATE citations SET doc_type = 'JOUR' WHERE doc_type = 'conferencePaper';
+
     UPDATE citations SET pub_date = regexp_replace(pub_date, E'^(\\D+) (\\d{4})', E'\\2\/\/\/\\1') WHERE pub_date ~ E'^\\D';
     UPDATE citations SET title2 = publisher WHERE doc_type = 'JOUR' AND publisher IS NOT NULL;
     UPDATE citations SET publisher = NULL WHERE doc_type = 'JOUR' AND publisher IS NOT NULL;
@@ -31,6 +45,9 @@ After loading we'll need to adjust some of the data:
     UPDATE zotero_cites_to_authors SET author_id = a.id FROM authors a WHERE a.author_name = name;
     INSERT INTO authors (author_name) SELECT DISTINCT name FROM zotero_cites_to_authors WHERE author_id IS NULL;
     UPDATE zotero_cites_to_authors SET author_id = a.id FROM authors a WHERE a.author_name = name AND author_id IS NULL;
+
+We need to take care of notes during processing! Here's a post-loading hacky fix:
+    INSERT INTO public.citation_notes (citation, notes) SELECT c.id, n.source::json->>'note' FROM citations n INNER JOIN citations c ON c.zotero_key = n.zotero_key WHERE n.doc_type = 'note' AND n.source::json->>'note' IS NOT NULL;
 
 # zotero.Zotero.items returns a data list as follows:
 {
@@ -119,6 +136,7 @@ After loading we'll need to adjust some of the data:
 """
 
 from pyzotero import zotero
+import datetime
 import json
 import psycopg2
 import configparser
@@ -249,7 +267,7 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
         except Exception as e:
             print(e)
 
-def main():
+def main(stop_date=datetime.datetime(2016, 12, 20)):
     "Integrate the latest updates to the database"
 
     config = configparser.ConfigParser()
@@ -259,15 +277,26 @@ def main():
     zot = zotero.Zotero(config['zotero']['group'], 'group', config['zotero']['key'])
 
     # list_collections(zot)
-    items = zot.items(sort='dateModified', direction='desc')
-    for i in items:
-        #print(json.dumps(i, sort_keys=True, indent=4))
-        if i['data']['itemType'] == 'attachment':
-            continue
-        z = ZoteroParser(i, config)
-        z.insert_authors()
-        z.insert_citations()
-        z.conn.close()
+    items = zot.items(sort='dateModified', direction='desc', limit=100)
+    mod_date = datetime.datetime.now()
+    while items and stop_date < mod_date:
+        for i in items:
+            #print(json.dumps(i, sort_keys=True, indent=4))
+            #print("%s %s" % (i['key'], i['data']['dateModified']))
+            if i['data']['itemType'] == 'attachment':
+                continue
+            mod_date = datetime.datetime.strptime(i['data']['dateModified'], '%Y-%m-%dT%H:%M:%SZ')
+            if stop_date > mod_date:
+                continue
+            process_item(i, config)
+        items = zot.follow()
+
+def process_item(i, config):
+    "Parse the item data and get it into the database"
+    z = ZoteroParser(i, config)
+    z.insert_authors()
+    z.insert_citations()
+    z.conn.close()
 
 def list_collections(zot):
     "We have a lot of collections"
@@ -287,4 +316,5 @@ def list_collections(zot):
     print(x)
 
 if __name__ == '__main__':
-    main()
+    stop_date = datetime.datetime(2016, 1, 1)
+    main(stop_date)
