@@ -10,7 +10,7 @@ pip install pyzotero
     UPDATE zotero_cites_to_authors SET author_id = a.id FROM authors a WHERE a.author_name = name;
     INSERT INTO authors (author_name) SELECT DISTINCT name FROM zotero_cites_to_authors WHERE author_id IS NULL;
     UPDATE zotero_cites_to_authors SET author_id = a.id FROM authors a WHERE a.author_name = name AND author_id IS NULL;
-    INSERT INTO cites_to_authors (citation, author_type, author) SELECT DISTINCT c.id, z.author_type, z.author_id FROM zotero_cites_to_authors z INNER JOIN citations c ON c.zotero_key = z.zotero_key WHERE c.zotero_key IS NOT NULL;
+    INSERT INTO cites_to_authors (citation, author_type, author) SELECT DISTINCT c.id, z.author_type, z.author_id FROM zotero_cites_to_authors z INNER JOIN citations c ON c.zotero_key = z.zotero_key WHERE c.zotero_key IS NOT NULL AND NOT EXISTS (SELECT citation, author_type, author FROM cites_to_authors WHERE citation = c.id AND author_type = z.author_type AND author = z.author_id);
 
 We need to take care of notes during processing! Here's a post-loading hacky fix:
     INSERT INTO public.citation_notes (citation, notes) SELECT c.id, n.source::json->>'note' FROM citations n INNER JOIN citations c ON c.zotero_key = n.zotero_key WHERE n.doc_type = 'note' AND n.source::json->>'note' IS NOT NULL;
@@ -224,9 +224,8 @@ class ZoteroParser:
     def map_pages(self):
         "Map start/end pages"
 
-        if '-' in self.cite['start_page']:
-            self.cite['start_page'], self.cite['end_page'] = self.cite['start_page'].split('-')
-
+        if self.cite['start_page'] is not None and '-' in self.cite['start_page']:
+            self.cite['start_page'], self.cite['end_page'] = self.cite['start_page'].split('-', maxsplit=1)
 
     def parse_tags(self, item):
         "Parse out keywords for the item"
@@ -248,7 +247,7 @@ class ZoteroParser:
         cur = self.conn.cursor()
         cur.execute("""
 INSERT INTO citations(abstract, access_date, alternate_title, call_number, doc_type, doi, edition, end_page, id_number, isbn_issn, issue_number, language, pub_database, pub_date, publisher, pub_place, pub_title, short_title, start_page, title, series, url, volume, work_type, zotero_key, source)
-VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
+VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
             (self.cite['abstract'], self.cite['access_date'], self.cite['alternate_title'], self.cite['call_number'], self.cite['doc_type'], self.cite['doi'], self.cite['edition'], self.cite['end_page'], self.cite['id_number'], self.cite['isbn_issn'], self.cite['issue_number'], self.cite['language'], self.cite['pub_database'], self.cite['pub_date'], self.cite['publisher'], self.cite['pub_place'], self.cite['pub_title'], self.cite['short_title'], self.cite['start_page'], self.cite['title'], self.cite['series'], self.cite['url'], self.cite['volume'], self.cite['work_type'], self.cite['zotero_key'], self.cite['source'])
         )
         self.conn.commit()
@@ -352,6 +351,9 @@ def prep_db(config):
 
     # Prevent duplicate author/citation rows from new citations
     stmts.append("ALTER TABLE cites_to_authors ADD CONSTRAINT unique_cites_to_authors UNIQUE (citation, author_type, author);")
+
+    # Store our keywords
+    stmts.append("CREATE TABLE zotero_keywords(zotero_key TEXT, keywords TEXT)")
 
     conn = get_db(config)
     cur = conn.cursor()
