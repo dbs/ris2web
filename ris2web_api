@@ -181,7 +181,7 @@ class ZoteroParser:
         self.map_doc_type()
         self.map_pages()
 
-        print(json.dumps(self.cite, sort_keys=True, indent=4))
+        #print(json.dumps(self.cite, sort_keys=True, indent=4))
 
         self.cite['source'] = json.dumps(item['data'])
         #print(json.dumps(self.authors))
@@ -351,7 +351,17 @@ def prep_db(config):
         r"UPDATE citations SET zotero_key = '5FQCJMJH' WHERE title = 'Book notes' AND pub_date ~ '1989';",
         r"UPDATE citations SET zotero_key = 'FJQ743X2' WHERE title = 'Comparative Labour History: Australia and Canada' AND pub_date ~ '1996';",
         r"UPDATE citations SET zotero_key = 'B69TWSH8' WHERE title = 'Editor''s Note' AND pub_date ~ '1988' AND pub_date ~ 'Spring';",
-
+        r"UPDATE citations SET zotero_key = '3TBZN432' WHERE title = 'Enjeux actuels de la formation professionnelle // Review' AND pub_date ~ '1994';",
+        r"UPDATE citations SET zotero_key = 'JHKHUMZE' WHERE title = 'Lane, Christel. Management And Labour In Europe // Review' AND pub_date ~ '1991';",
+        r"UPDATE citations SET zotero_key = '46AJPUFF' WHERE title = 'La sociologie des entreprises // Review' AND pub_date ~ '1996';",
+        r"UPDATE citations SET zotero_key = 'CCENH72Z' WHERE title = 'Les apprentissages du changement dans l''entreprise // Review' AND pub_date ~ '1996';",
+        r"UPDATE citations SET zotero_key = 'NJV89249' WHERE title = 'Modern capitalism: privatization, employee ownership & industrial democracy // Review' AND pub_date ~ '1996';",
+        r"UPDATE citations SET zotero_key = 'T3ZU5PT6' WHERE title = 'Occupational subcultures in the workplace // Review' AND pub_date ~ '1995';",
+        r"UPDATE citations SET zotero_key = 'BVI45GH5' WHERE title = 'On strong foundations: the BWIU & industrial relations in the Australian construction industry, 1942-1992 // Review' AND pub_date ~ '1996';",
+        r"UPDATE citations SET zotero_key = 'MZNVG26X' WHERE title = 'Profit sharing: does it make a difference? // Review' AND pub_date ~ '1994';",
+        r"UPDATE citations SET zotero_key = '4KJ4HQ5X' WHERE title = 'Projecting capitalism: a history of the internationalization of the construction industry // Review' AND pub_date ~ '1995';",
+        r"UPDATE citations SET zotero_key = '2N7APD6K' WHERE title = 'Shadows of the mind: a search for the missing science of consciousness // Review' AND pub_date ~ '1995';",
+        r"UPDATE citations SET zotero_key = 'QCZZ95UE' WHERE title = 'Understanding industrial organizations: theoretical perspectives in industrial sociology // Review' AND pub_date ~ '1994';",
     ]
 
     # This will enable us to insert the new citations, as well as a new
@@ -400,8 +410,11 @@ def post_process(config):
         r"""UPDATE citations
             SET title2 = 'Labour / Le Travail'
             WHERE title2 IN ('Labour/Le Travail');""",
+        r"""UPDATE citations
+            SET title2 = 'Socialist Studies / Études socialistes'
+            WHERE title2 IN ('Socialist Studies/Études socialistes');""",
         r"""UPDATE citations SET language = 'English'
-            WHERE language IN ('eng', 'en', 'en_ca');""",
+            WHERE language IN ('eng', 'en', 'en_ca', 'en-GB');""",
         r"""UPDATE citations SET language = 'English'
             WHERE language IS NULL;""",
         r"""UPDATE citations SET language = 'French'
@@ -414,6 +427,8 @@ def post_process(config):
             WHERE language IN ('fr en');""",
         r"""UPDATE citations SET language = 'French, English, Spanish'
             WHERE language IN ('fr en sp');""",
+        r"""UPDATE citations SET language = 'Italian'
+            WHERE language IN ('It');""",
         r"""UPDATE citations
             SET publisher = 'Canadian Committee on Labour History'
             WHERE publisher = 'Committee on Canadian Labour History';""",
