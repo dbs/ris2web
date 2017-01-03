@@ -3,18 +3,6 @@
 """
 pip install pyzotero
 
-    UPDATE citations SET pub_date = regexp_replace(pub_date, E'^(\\D+) (\\d{4})', E'\\2\/\/\/\\1') WHERE pub_date ~ E'^\\D';
-    UPDATE citations SET title2 = publisher WHERE doc_type = 'JOUR' AND publisher IS NOT NULL;
-    UPDATE citations SET publisher = NULL WHERE doc_type = 'JOUR' AND publisher IS NOT NULL;
-
-    UPDATE zotero_cites_to_authors SET author_id = a.id FROM authors a WHERE a.author_name = name;
-    INSERT INTO authors (author_name) SELECT DISTINCT name FROM zotero_cites_to_authors WHERE author_id IS NULL;
-    UPDATE zotero_cites_to_authors SET author_id = a.id FROM authors a WHERE a.author_name = name AND author_id IS NULL;
-    INSERT INTO cites_to_authors (citation, author_type, author) SELECT DISTINCT c.id, z.author_type, z.author_id FROM zotero_cites_to_authors z INNER JOIN citations c ON c.zotero_key = z.zotero_key WHERE c.zotero_key IS NOT NULL AND NOT EXISTS (SELECT citation, author_type, author FROM cites_to_authors WHERE citation = c.id AND author_type = z.author_type AND author = z.author_id);
-
-We need to take care of notes during processing! Here's a post-loading hacky fix:
-    INSERT INTO public.citation_notes (citation, notes) SELECT c.id, n.source::json->>'note' FROM citations n INNER JOIN citations c ON c.zotero_key = n.zotero_key WHERE n.doc_type = 'note' AND n.source::json->>'note' IS NOT NULL;
-    DELETE FROM citations WHERE doc_type = 'note';
 
 # zotero.Zotero.items returns a data list as follows:
 {
@@ -256,14 +244,20 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
     def update_citation(self):
         cur = self.conn.cursor()
 
-        cur.execute("""
-            SELECT id FROM citations WHERE title = %s AND doc_type = %s AND start_page = %s
-        """, (self.cite['title'], self.cite['doc_type'], self.cite['start_page']))
+        # Start with checking for the Zotero key
+        if self.cite['zotero_key'] is not None:
+            cur.execute("SELECT id FROM citations WHERE zotero_key = %s", (self.cite['zotero_key'],))
+            res = cur.fetchone()
 
-        res = cur.fetchone()
-        if cur.rowcount > 1 or res is None:
-            cur.close()
-            return
+        if cur.rowcount != 1:
+            cur.execute("""
+                SELECT id FROM citations WHERE title = %s AND doc_type = %s AND start_page = %s
+            """, (self.cite['title'], self.cite['doc_type'], self.cite['start_page']))
+
+            res = cur.fetchone()
+            if cur.rowcount > 1 or res is None:
+                cur.close()
+                return False
 
         cur.execute("UPDATE citations SET abstract= %s, access_date= %s, alternate_title= %s, call_number= %s, doc_type= %s, doi= %s, edition= %s, end_page = %s, id_number= %s, isbn_issn= %s, issue_number= %s, language= %s, pub_database= %s, pub_date= %s, pub_title= %s, publisher= %s, pub_place= %s, short_title= %s, start_page= %s, title= %s, series= %s, url= %s, volume= %s, work_type= %s, zotero_key= %s, source = %s WHERE id = %s",
             (self.cite['abstract'], self.cite['access_date'], self.cite['alternate_title'], self.cite['call_number'], self.cite['doc_type'], self.cite['doi'], self.cite['edition'], self.cite['end_page'], self.cite['id_number'], self.cite['isbn_issn'], self.cite['issue_number'], self.cite['language'], self.cite['pub_database'], self.cite['pub_date'], self.cite['pub_title'], self.cite['publisher'], self.cite['pub_place'], self.cite['short_title'], self.cite['start_page'], self.cite['title'], self.cite['series'], self.cite['url'], self.cite['volume'], self.cite['work_type'], self.cite['zotero_key'], self.cite['source'], res[0])
@@ -271,6 +265,7 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
 
         self.conn.commit()
         cur.close()
+        return True
 
     def insert_authors(self):
         cur = self.conn.cursor()
@@ -332,7 +327,31 @@ def prep_db(config):
 
     stmts = [
         "ALTER TABLE citations ADD COLUMN zotero_key TEXT;",
-        "ALTER TABLE citations ADD COLUMN source JSONB;"
+        "ALTER TABLE citations ADD COLUMN source JSONB;",
+        "CREATE INDEX ON citations(zotero_key);",
+        r"UPDATE citations SET zotero_key = 'MNR2E9G7' WHERE title = 'Comprendre le comportement de l''individu au travail: un schema d''integration // Review';",
+        r"UPDATE citations SET zotero_key = 'HKPVMMVR' WHERE title = '[Au-dela de l''emploi: transformations du travail & devenir du droit du travail en Europe]' AND pub_date ~ '1999';",
+        r"UPDATE citations SET zotero_key = '8IZT5G6M' WHERE title = 'Critique du droit du travail // Review' AND pub_date ~ '1995';",
+        r"UPDATE citations SET zotero_key = 'RPKWMA9Z' WHERE title = '[Droits en synergie sur le travail: elements de droits international & compare du travail]' AND pub_date ~ '1998';",
+        r"UPDATE citations SET zotero_key = '7BTUBT86' WHERE title = 'Le droit des salaries a la negociation collective: principe general du droit // Review' AND pub_date ~ '1995';",
+        r"UPDATE citations SET zotero_key = 'IMURBAPS' WHERE title = 'Les dilemmes de l''ANACT: ambiguite ou complementarite? [L''accord nord-americain de cooperation dans le domaine du travail]' AND pub_date ~ '1999';",
+        r"UPDATE citations SET zotero_key = 'XCVR3HWC' WHERE title = 'L''État, l''autonomie collective et le travailleur - Étude comparée du droit italien et du droit français de la représentativité syndicale' AND pub_date ~ '1997';",
+        r"UPDATE citations SET zotero_key = 'HPH22NAD' WHERE title = '[Libertad sindical]' AND pub_date ~ '2000';",
+        r"UPDATE citations SET zotero_key = '98X42ZCX' WHERE title = 'Syndicats et droit syndical:  Le droit syndical dans l''entreprise' AND pub_date ~ '1985';",
+        r"UPDATE citations SET zotero_key = 'JKVT5E4T' WHERE title = '[The rise & development of collective labor law]' AND pub_date ~ '2001';",
+        r"UPDATE citations SET zotero_key = 'SEK2ZV7H' WHERE title = 'Transformation de l''entreprise et representation syndicale' AND pub_date ~ '1993';",
+        r"UPDATE citations SET zotero_key = 'WSBUS4M2' WHERE title = 'La Planification strategique des ressources humaines // Review' AND pub_date ~ '1992';",
+        r"UPDATE citations SET zotero_key = 'C4K92P5M' WHERE title = 'Sayer, Derek. Capitalism And Modernity: An Excursus On Marx And Weber // Review' AND pub_date ~ '1991';",
+        r"UPDATE citations SET zotero_key = 'GBFI9W6E' WHERE title = 'Esping-Andersen, Gosta. The Three Worlds Of Welfare Capitalism // Review' AND pub_date ~ '1992';",
+        r"UPDATE citations SET zotero_key = '2T8TQAV3' WHERE title = 'Comparative Industrial Relations. Ideologies, Institutions, Practices and Problems under Social Systems with Special Reference to Socialist Planned Economies' AND pub_date ~ '1985';",
+        r"UPDATE citations SET zotero_key = 'A2K78SKR' WHERE title = 'Mitarbeiter beteiligung. Grundlagen - Befunde - Modelle';",
+        r"UPDATE citations SET zotero_key = '535SASAC' WHERE title = 'New Forms of Work Organization and thier Social and Economic Development';",
+        r"UPDATE citations SET zotero_key = 'WMRCN7DN' WHERE title = 'Trade Unions : The logic of Collective Action' AND pub_date ~ '1984';",
+        r"UPDATE citations SET zotero_key = '6H6S3ANE' WHERE title = 'Workplace Innovation in Canada. Reflections on the Past Prospects for the Future. A Study prepared for the Economic Council of Canada, Ottawa, Minister of Supply and Services Canada';",
+        r"UPDATE citations SET zotero_key = '5FQCJMJH' WHERE title = 'Book notes' AND pub_date ~ '1989';",
+        r"UPDATE citations SET zotero_key = 'FJQ743X2' WHERE title = 'Comparative Labour History: Australia and Canada' AND pub_date ~ '1996';",
+        r"UPDATE citations SET zotero_key = 'B69TWSH8' WHERE title = 'Editor''s Note' AND pub_date ~ '1988' AND pub_date ~ 'Spring';",
+
     ]
 
     # This will enable us to insert the new citations, as well as a new
@@ -362,12 +381,92 @@ def prep_db(config):
     conn.commit()
     cur.close()
 
+def post_process(config):
+
+    stmts = [
+        r"""UPDATE citations
+            SET url = regexp_replace(url, '\.librweb.laurentian.ca', '')
+            WHERE url ~ 'librweb';""",
+        r"UPDATE citations SET isbn_issn = regexp_replace(isbn_issn, E'^(\\d{4})(\\d{4})$', '\\1-\\2') WHERE isbn_issn ~ E'^\\d{8}$';",
+        r"UPDATE citations SET pub_date = regexp_replace(pub_date, E'^(\\D+) (\\d{4})', E'\\2\/\/\/\\1') WHERE pub_date ~ E'^\\D';",
+        "UPDATE citations SET title2 = pub_title WHERE doc_type = 'JOUR' AND title2 IS NULL AND pub_title IS NOT NULL;",
+        "UPDATE zotero_cites_to_authors SET author_id = a.id FROM authors a WHERE a.author_name = name;",
+        "INSERT INTO authors (author_name) SELECT DISTINCT name FROM zotero_cites_to_authors WHERE author_id IS NULL;",
+        "UPDATE zotero_cites_to_authors SET author_id = a.id FROM authors a WHERE a.author_name = name AND author_id IS NULL;",
+        "INSERT INTO cites_to_authors (citation, author_type, author) SELECT DISTINCT c.id, z.author_type, z.author_id FROM zotero_cites_to_authors z INNER JOIN citations c ON c.zotero_key = z.zotero_key WHERE c.zotero_key IS NOT NULL AND NOT EXISTS (SELECT citation, author_type, author FROM cites_to_authors WHERE citation = c.id AND author_type = z.author_type AND author = z.author_id);",
+        r"""UPDATE citations
+            SET title2 = 'Relations Industrielles / Industrial Relations'
+            WHERE title2 ~* 'Relations Industrielles';""",
+        r"""UPDATE citations
+            SET title2 = 'Labour / Le Travail'
+            WHERE title2 IN ('Labour/Le Travail');""",
+        r"""UPDATE citations SET language = 'English'
+            WHERE language IN ('eng', 'en', 'en_ca');""",
+        r"""UPDATE citations SET language = 'English'
+            WHERE language IS NULL;""",
+        r"""UPDATE citations SET language = 'French'
+            WHERE language IN ('fr', 'fre');""",
+        r"""UPDATE citations SET language = 'Spanish'
+            WHERE language IN ('sp');""",
+        r"""UPDATE citations SET language = 'English, French'
+            WHERE language IN ('en fr', 'eng; fre');""",
+        r"""UPDATE citations SET language = 'French, English'
+            WHERE language IN ('fr en');""",
+        r"""UPDATE citations SET language = 'French, English, Spanish'
+            WHERE language IN ('fr en sp');""",
+        r"""UPDATE citations
+            SET publisher = 'Canadian Committee on Labour History'
+            WHERE publisher = 'Committee on Canadian Labour History';""",
+        r"""UPDATE citations SET series = title2
+                WHERE doc_type IN ('BOOK', 'RPRT');""",
+        r"""UPDATE citations SET series = title3
+                WHERE doc_type IN ('CHAP');""",
+        r"""UPDATE citations SET pub_title = title2
+                WHERE doc_type IN ('JOUR', 'CHAP', 'NEWS', 'MGZN', 'ELEC');""",
+        r"""UPDATE citations SET pub_title = title
+                WHERE doc_type IN ('BOOK');""",
+        r"""UPDATE citations SET kw_tsv = setweight(to_tsvector('english', title), 'A')
+             || setweight(to_tsvector('english', COALESCE(abstract, '')), 'C');""",
+        r"""UPDATE citations SET kw_tsv = kw_tsv || setweight(to_tsvector('english', COALESCE(
+             (SELECT STRING_AGG(notes, ' ') FROM citation_notes WHERE citation = citations.id), '')), 'C');""",
+        r"""UPDATE citations SET kw_tsv = kw_tsv || setweight(to_tsvector('english', COALESCE(
+             (SELECT STRING_AGG(keywords, ' ') FROM citation_keywords WHERE citation = citations.id), '')), 'B');""",
+        r"""UPDATE citations SET kw_tsv = kw_tsv || setweight(to_tsvector('english', COALESCE(
+             (SELECT STRING_AGG(author_name, ' ') FROM authored_v WHERE citation = citations.id), '')), 'B');""",
+         # TODO: handle notes directly during processing
+        "INSERT INTO public.citation_notes (citation, notes) SELECT c.id, n.source::json->>'note' FROM citations n INNER JOIN citations c ON c.zotero_key = n.zotero_key WHERE n.doc_type = 'note' AND n.source::json->>'note' IS NOT NULL;",
+        "DELETE FROM citations WHERE doc_type = 'note';",
+        r"UPDATE citations SET pub_date = regexp_replace(pub_date, E'^.*? (\\d+).*? (\\d{4})', E'\\2/01/\\1') WHERE pub_date ~* E'^Jan';",
+        r"UPDATE citations SET pub_date = regexp_replace(pub_date, E'^.*? (\\d+).*? (\\d{4})', E'\\2/02/\\1') WHERE pub_date ~* E'^Feb';",
+        r"UPDATE citations SET pub_date = regexp_replace(pub_date, E'^.*? (\\d+).*? (\\d{4})', E'\\2/03/\\1') WHERE pub_date ~* E'^Mar';",
+        r"UPDATE citations SET pub_date = regexp_replace(pub_date, E'^.*? (\\d+).*? (\\d{4})', E'\\2/04/\\1') WHERE pub_date ~* E'^Apr';",
+        r"UPDATE citations SET pub_date = regexp_replace(pub_date, E'^.*? (\\d+).*? (\\d{4})', E'\\2/05/\\1') WHERE pub_date ~* E'^May';",
+        r"UPDATE citations SET pub_date = regexp_replace(pub_date, E'^.*? (\\d+).*? (\\d{4})', E'\\2/06/\\1') WHERE pub_date ~* E'^Jun';",
+        r"UPDATE citations SET pub_date = regexp_replace(pub_date, E'^.*? (\\d+).*? (\\d{4})', E'\\2/07/\\1') WHERE pub_date ~* E'^Jul';",
+        r"UPDATE citations SET pub_date = regexp_replace(pub_date, E'^.*? (\\d+).*? (\\d{4})', E'\\2/08/\\1') WHERE pub_date ~* E'^Aug';",
+        r"UPDATE citations SET pub_date = regexp_replace(pub_date, E'^.*? (\\d+).*? (\\d{4})', E'\\2/09/\\1') WHERE pub_date ~* E'^Sep';",
+        r"UPDATE citations SET pub_date = regexp_replace(pub_date, E'^.*? (\\d+).*? (\\d{4})', E'\\2/10/\\1') WHERE pub_date ~* E'^Oct';",
+        r"UPDATE citations SET pub_date = regexp_replace(pub_date, E'^.*? (\\d+).*? (\\d{4})', E'\\2/11/\\1') WHERE pub_date ~* E'^Nov';",
+        r"UPDATE citations SET pub_date = regexp_replace(pub_date, E'^.*? (\\d+).*? (\\d{4})', E'\\2/12/\\1') WHERE pub_date ~* E'^Dec';",
+    ]
+
+    conn = get_db(config)
+    cur = conn.cursor()
+    for stmt in stmts:
+        cur.execute(stmt)
+    conn.commit()
+    cur.close()
 
 def main():
     "Integrate the latest updates to the database"
 
+    write_updates = False
+    read_updates = True
+
     config = configparser.ConfigParser()
     config.read(abspath(dirname(__file__)) + '/config.ini')
+    if write_updates:
+        f = open('updates.json', 'w')
 
     try:
         prep_db(config)
@@ -380,7 +479,11 @@ def main():
     zot = zotero.Zotero(config['zotero']['group'], 'group', config['zotero']['key'])
 
     # list_collections(zot)
-    items = zot.items(sort='dateModified', direction='desc', limit=100)
+    if read_updates:
+        f = open('updates.json', 'r')
+        items = json.load(f)
+    else:
+        items = zot.items(sort='dateModified', direction='desc', limit=100)
     # items = [zot.item('JC94RN9H')]
 #    import requests
 #    r = requests.get('https://api.zotero.org/groups/290262/items/2P9NSQ9M')
@@ -390,7 +493,8 @@ def main():
     mod_date = datetime.datetime.now()
     while items and stop_date < mod_date:
         for i in items:
-            #print(json.dumps(i, sort_keys=True, indent=4))
+            if write_updates:
+                f.write(json.dumps(i, sort_keys=True, indent=4))
             #print("%s %s" % (i['key'], i['data']['dateModified']))
             if i['data']['itemType'] == 'attachment':
                 continue
@@ -398,24 +502,25 @@ def main():
             if stop_date > mod_date:
                 continue
             process_item(i, config)
-        items = zot.follow()
+        if not read_updates:
+            items = zot.follow()
+        else:
+            items = None
+
+    try:
+        post_process(config)
+    except Exception as e:
+        print(e)
 
 def process_item(i, config):
     "Parse the item data and get it into the database"
     z = ZoteroParser(i, config)
 
-    stop_date = datetime.datetime.strptime(config['zotero']['stop_date'], "%Y-%m-%d")
-
-    if z.add_date < stop_date:
-        z.insert_authors()
-        z.insert_keywords()
-        z.update_citation()
-        z.conn.close()
-    else:
-        z.insert_authors()
-        z.insert_keywords()
+    z.insert_authors()
+    z.insert_keywords()
+    if z.update_citation() is False:
         z.insert_citation()
-        z.conn.close()
+    z.conn.close()
 
 def list_collections(zot):
     "We have a lot of collections"
