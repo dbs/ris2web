@@ -151,10 +151,11 @@ class ZoteroParser:
         'A5': 'contributor'
     }
 
-    def __init__(self, item, config):
+    def __init__(self, item, config, notes):
         "Parse it up"
 
         self.add_date = datetime.datetime.strptime(item['data']['dateAdded'], '%Y-%m-%dT%H:%M:%SZ')
+        self.notes = notes
         self.cite = {}
         self.authors = []
         self.keywords = []
@@ -162,6 +163,11 @@ class ZoteroParser:
         self.get_db()
         if item['data']['itemType'] == 'attachment':
             return
+
+        if item['data']['itemType'] == 'note':
+            self.parse_notes(item)
+            return
+
         for zot, ris in ZoteroParser.core_map.items():
             if zot in item['data']:
                 z = item['data'][zot]
@@ -196,7 +202,7 @@ class ZoteroParser:
             'thesis': 'THES',
             'report': 'RPRT',
             'webpage': 'ELEC',
-            'magazineArticle': 'JOUR',
+            'magazineArticle': 'MGZN',
             'newspaperArticle': 'JOUR',
             'film': 'MPCT',
             'videoRecording': 'VIDEO',
@@ -214,12 +220,20 @@ class ZoteroParser:
 
         if self.cite['start_page'] is not None and '-' in self.cite['start_page']:
             self.cite['start_page'], self.cite['end_page'] = self.cite['start_page'].split('-', maxsplit=1)
+        # emdashes - really
+        if self.cite['start_page'] is not None and '–' in self.cite['start_page']:
+            self.cite['start_page'], self.cite['end_page'] = self.cite['start_page'].split('–', maxsplit=1)
 
     def parse_tags(self, item):
         "Parse out keywords for the item"
 
         for t in item['data']['tags']:
             self.keywords.append(t['tag'])
+
+    def parse_notes(self, item):
+        "Parse out notes for the item"
+
+        self.notes.append({item['data']['key']: item['data']['note']})
 
     def authorship(self, item):
         "Parse out different types of authors"
@@ -242,6 +256,11 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
         cur.close()
 
     def update_citation(self):
+
+        if 'title' not in self.cite:
+            print(self.cite['zotero_key'])
+            return False
+
         cur = self.conn.cursor()
 
         # Start with checking for the Zotero key
@@ -250,12 +269,13 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
             res = cur.fetchone()
 
         if cur.rowcount != 1:
-            cur.execute("""
-                SELECT id FROM citations WHERE title = %s AND doc_type = %s AND start_page = %s
-            """, (self.cite['title'], self.cite['doc_type'], self.cite['start_page']))
+            cur.execute(r"""
+                SELECT id FROM citations WHERE (lower(translate(title, '[]:. ', '')) = %s OR regexp_replace(title, E' // Review', E'') = %s) AND doc_type = %s AND (start_page = %s OR start_page IS NULL) AND zotero_key IS NULL
+            """, (self.cite['title'].translate(str.maketrans('', '', '[]:. ')).lower(), self.cite['title'], self.cite['doc_type'], self.cite['start_page']))
 
             res = cur.fetchone()
-            if cur.rowcount > 1 or res is None:
+            # If two match, then we'll be picking the first one
+            if cur.rowcount > 2 or res is None:
                 cur.close()
                 return False
 
@@ -329,6 +349,7 @@ def prep_db(config):
         "ALTER TABLE citations ADD COLUMN zotero_key TEXT;",
         "ALTER TABLE citations ADD COLUMN source JSONB;",
         "CREATE INDEX ON citations(zotero_key);",
+        r"UPDATE citations SET title = regexp_replace(title, E'^(.*?) (ed\\. )?by .*? \\(review\\)$', E'\\1') WHERE title ~ E' by .*? \\(review\\)$';",
         r"UPDATE citations SET zotero_key = 'MNR2E9G7' WHERE title = 'Comprendre le comportement de l''individu au travail: un schema d''integration // Review';",
         r"UPDATE citations SET zotero_key = 'HKPVMMVR' WHERE title = '[Au-dela de l''emploi: transformations du travail & devenir du droit du travail en Europe]' AND pub_date ~ '1999';",
         r"UPDATE citations SET zotero_key = '8IZT5G6M' WHERE title = 'Critique du droit du travail // Review' AND pub_date ~ '1995';",
@@ -362,6 +383,21 @@ def prep_db(config):
         r"UPDATE citations SET zotero_key = '4KJ4HQ5X' WHERE title = 'Projecting capitalism: a history of the internationalization of the construction industry // Review' AND pub_date ~ '1995';",
         r"UPDATE citations SET zotero_key = '2N7APD6K' WHERE title = 'Shadows of the mind: a search for the missing science of consciousness // Review' AND pub_date ~ '1995';",
         r"UPDATE citations SET zotero_key = 'QCZZ95UE' WHERE title = 'Understanding industrial organizations: theoretical perspectives in industrial sociology // Review' AND pub_date ~ '1994';",
+        r"UPDATE citations SET zotero_key = 'VXSPD67B' WHERE id = 2227 AND title ~* 'in case you hadn''t noticed';",
+        r"UPDATE citations SET zotero_key = 'XFDSE58P' WHERE id = 2228 AND title ~* 'in case you hadn''t noticed';",
+        r"UPDATE citations SET zotero_key = '777WN9HU' WHERE id = 204 AND title ~* 'Alberta''s Construction Labour Relations';",
+        r"DELETE FROM citations WHERE id = 205 AND title ~* 'Alberta''s Construction Labour Relations';",
+        r"UPDATE citations SET zotero_key = 'WTC627ZQ' WHERE id = 463 AND title ~* 'beyond Simulation, A Touch of Reality';",
+        r"DELETE FROM citations WHERE id = 464 AND title ~* 'beyond Simulation, A Touch of Reality';",
+        r"UPDATE citations SET zotero_key = 'SREMJFJ4' WHERE id = 467 AND title ~* 'Bargaining Units and Bargaining Power';",
+        r"DELETE FROM citations WHERE id IN (468, 469) AND title ~* 'Bargaining Units and Bargaining Power';",
+        r"UPDATE citations SET zotero_key = 'JSC4JQNT' WHERE id = 535 AND title ~* 'Recent Publications in Canadian Labour History';",
+        r"UPDATE citations SET zotero_key = 'T8WCZ9G9' WHERE id = 532 AND title ~* 'Recent Publications in Canadian Labour History';",
+        r"UPDATE citations SET zotero_key = 'JC9W3X3B' WHERE id = 533 AND title ~* 'Recent Publications in Canadian Labour History';",
+        r"UPDATE citations SET zotero_key = 'EC4XV7JF' WHERE id = 524 AND title ~* 'Recent Publications in Canadian Labour History';",
+        r"UPDATE citations SET zotero_key = 'V9G62UU9' WHERE id = 610 AND title ~* 'Book notes / Reférénces bibliographiques';",
+        r"DELETE FROM citations WHERE id = 609 AND title ~* 'Book notes/ Reférénces bibliographiques';",
+        r"UPDATE citations SET zotero_key = 'EUCSUJNP' WHERE title = 'Canadian Labour History Bibliography';",
     ]
 
     # This will enable us to insert the new citations, as well as a new
@@ -391,13 +427,14 @@ def prep_db(config):
     conn.commit()
     cur.close()
 
-def post_process(config):
+def post_process(config, notes):
 
     stmts = [
         r"""UPDATE citations
             SET url = regexp_replace(url, '\.librweb.laurentian.ca', '')
             WHERE url ~ 'librweb';""",
-        r"UPDATE citations SET isbn_issn = regexp_replace(isbn_issn, E'^(\\d{4})(\\d{4})$', '\\1-\\2') WHERE isbn_issn ~ E'^\\d{8}$';",
+        r"UPDATE citations SET isbn_issn = regexp_replace(isbn_issn, E'^(\\d{4})(\\d{4})$', '\1-\2') WHERE isbn_issn ~ E'^\\d{8}$';",
+        r"UPDATE citations SET isbn_issn = regexp_replace(isbn_issn, E'^(\\d{4})(\\d{3}X)$', '\1-\2') WHERE isbn_issn ~ E'^\\d{7}X$';",
         r"UPDATE citations SET pub_date = regexp_replace(pub_date, E'^(\\D+) (\\d{4})', E'\\2\/\/\/\\1') WHERE pub_date ~ E'^\\D';",
         "UPDATE citations SET title2 = pub_title WHERE doc_type = 'JOUR' AND title2 IS NULL AND pub_title IS NOT NULL;",
         "UPDATE zotero_cites_to_authors SET author_id = a.id FROM authors a WHERE a.author_name = name;",
@@ -448,9 +485,6 @@ def post_process(config):
              (SELECT STRING_AGG(keywords, ' ') FROM citation_keywords WHERE citation = citations.id), '')), 'B');""",
         r"""UPDATE citations SET kw_tsv = kw_tsv || setweight(to_tsvector('english', COALESCE(
              (SELECT STRING_AGG(author_name, ' ') FROM authored_v WHERE citation = citations.id), '')), 'B');""",
-         # TODO: handle notes directly during processing
-        "INSERT INTO public.citation_notes (citation, notes) SELECT c.id, n.source::json->>'note' FROM citations n INNER JOIN citations c ON c.zotero_key = n.zotero_key WHERE n.doc_type = 'note' AND n.source::json->>'note' IS NOT NULL;",
-        "DELETE FROM citations WHERE doc_type = 'note';",
         r"UPDATE citations SET pub_date = regexp_replace(pub_date, E'^.*? (\\d+).*? (\\d{4})', E'\\2/01/\\1') WHERE pub_date ~* E'^Jan';",
         r"UPDATE citations SET pub_date = regexp_replace(pub_date, E'^.*? (\\d+).*? (\\d{4})', E'\\2/02/\\1') WHERE pub_date ~* E'^Feb';",
         r"UPDATE citations SET pub_date = regexp_replace(pub_date, E'^.*? (\\d+).*? (\\d{4})', E'\\2/03/\\1') WHERE pub_date ~* E'^Mar';",
@@ -465,18 +499,25 @@ def post_process(config):
         r"UPDATE citations SET pub_date = regexp_replace(pub_date, E'^.*? (\\d+).*? (\\d{4})', E'\\2/12/\\1') WHERE pub_date ~* E'^Dec';",
     ]
 
-    conn = get_db(config)
-    cur = conn.cursor()
-    for stmt in stmts:
-        cur.execute(stmt)
-    conn.commit()
-    cur.close()
+    try:
+        conn = get_db(config)
+        cur = conn.cursor()
+        for stmt in stmts:
+            cur.execute(stmt)
+        conn.commit()
+        for note in notes:
+            cur.execute("INSERT INTO citation_notes(citation, notes) VALUES (%s, %s)", (note[0], note[1]))
+        conn.commit()
+        cur.close()
+    except Exception as e:
+        print(e)
 
 def main():
     "Integrate the latest updates to the database"
 
     write_updates = False
     read_updates = True
+    notes = []
 
     config = configparser.ConfigParser()
     config.read(abspath(dirname(__file__)) + '/config.ini')
@@ -516,24 +557,25 @@ def main():
             mod_date = datetime.datetime.strptime(i['data']['dateModified'], '%Y-%m-%dT%H:%M:%SZ')
             if stop_date > mod_date:
                 continue
-            process_item(i, config)
+            process_item(i, config, notes)
         if not read_updates:
             items = zot.follow()
         else:
             items = None
 
     try:
-        post_process(config)
+        post_process(config, notes)
     except Exception as e:
         print(e)
 
-def process_item(i, config):
+def process_item(i, config, notes):
     "Parse the item data and get it into the database"
-    z = ZoteroParser(i, config)
+
+    z = ZoteroParser(i, config, notes)
 
     z.insert_authors()
     z.insert_keywords()
-    if z.update_citation() is False:
+    if 'zotero_key' in z.cite and z.update_citation() is False:
         z.insert_citation()
     z.conn.close()
 
