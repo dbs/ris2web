@@ -11,9 +11,11 @@ header, footer {
     color: white;
     text-decoration: none;
 }
+a { text-decoration: none; }
 body { 
     margin: 0px;
     background-color: white;
+    font-family: Arial, Helvetica, sans-serif;
 }
 div.header, footer {
     color: white;
@@ -37,9 +39,6 @@ section.result {
 section.result a {
     text-decoration: none;
 }
-.odd {
-    background-color: #eeeeee;
-}
 section.home_summary {
     margin: 0 0 1em 1em;
     float: left;
@@ -56,6 +55,9 @@ section.home_summary td.pub {
     max-width: 20em;
     padding-left: 2em;
     text-indent: -2em;
+}
+td {
+    border-bottom: 0.25em solid transparent;
 }
 th.numcites {
     width: 5em;
