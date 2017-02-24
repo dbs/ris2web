@@ -12,7 +12,7 @@ robots = open('static/robots.txt', 'w')
 robots.write(r"""User-agent: *
 Allow: /
 
-Sitemap: http://labourstudies.ca/sitemap.xml
+Sitemap: https://labourstudies.ca/sitemap.xml
 """)
 
 sm = open('static/sitemap.xml', 'w')
@@ -29,6 +29,6 @@ with conn:
     with conn.cursor() as c:
         c.execute(r"""SELECT id FROM citations ORDER BY id DESC""")
         for r in c:
-            sm.write("<loc>http://labourstudies.ca/citation/%d</loc>\n" % (r[0]))
+            sm.write("<url><loc>https://labourstudies.ca/citation/%d</loc></url>\n" % (r[0]))
 
 sm.write("</urlset>")
