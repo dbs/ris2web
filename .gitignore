@@ -1,5 +1,6 @@
 *.sql
 config.ini
-static/*
+static/*.xml
+static/*.txt
 **.swp
 README.html

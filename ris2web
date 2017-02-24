@@ -432,13 +432,6 @@ def home_html():
         logging.exception('Failed to show home page')
         abort(500)
 
-@app.route('/<lang>/robots.txt')
-@app.route('/<lang>/sitemap.xml')
-def static_from_root():
-    "Serve up static files using a root path"
-
-    return send_from_directory(app.static_folder, request.path[1:])
-
 class Facet:
     """
     Represents structured values for facets

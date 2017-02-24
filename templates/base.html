@@ -3,9 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="shortcut icon" sizes="196x196" href="/favicon-196.png">
+<link rel="apple-touch-icon-precomposed" href="/favicon-152.png">
 <title>{% block title %}{% endblock %}</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<link href='http://fonts.googleapis.com/css?family=Nunito:700' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Nunito:700' rel='stylesheet' type='text/css'>
 </head>
 <body>
 <header>
@@ -24,8 +26,8 @@
 {% block content %}{% endblock %}
 <footer class="footer">
 {{ _('A project of the <a href="%(liburl)s">%(libname)s</a> at <a href="%(uniurl)s">%(uniname)s</a>.',
-        liburl="http://laurentian.ca/library/", libname=_("J.N. Desmarais Library"),
-        uniurl="http://laurentian.ca/", uniname=_("Laurentian University")
+        liburl="https://laurentian.ca/library/", libname=_("J.N. Desmarais Library"),
+        uniurl="https://laurentian.ca/", uniname=_("Laurentian University")
 ) }}
 <a style="float:right; font-size: 60%; padding-right: 1em;" href="https://drive.google.com/open?id=1ckkrQzW4KI11U58ODsQFISlOUYI0aXWpUT9_xw019mo&authuser=1">{{ _('(Presentation)') }}</a>
 </footer>
