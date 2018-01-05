@@ -60,7 +60,7 @@
 </tr>
 {%- endif %}
 {%- if record.doc_type != "THES" %}
-    {%- if record.pub_venue == "Periodical" and record.doc_type != "RPRT" %}
+    {%- if record.pub_venue == "Periodical" and record.doc_type != "RPRT" and record.title2 %}
 <tr property="isPartOf" typeof="{{ record.pub_venue }}" resource="#pub_venue">
   <th>{{ _('Journal') }}</th>
   <td><span property="name"><a href="{{ 
