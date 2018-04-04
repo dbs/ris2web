@@ -85,6 +85,7 @@ class RISParser:
             "ALTER TABLE citations ADD COLUMN series TEXT;",
             "ALTER TABLE citations ADD COLUMN pub_title TEXT;",
             "ALTER TABLE citations ADD COLUMN kw_tsv TSVECTOR;",
+            "ALTER TABLE citations ADD COLUMN merged_with TEXT;",
             r"""UPDATE citations SET pub_date = NULL WHERE pub_date !~ '^\d{4}';""",
             "DROP FUNCTION IF EXISTS ris_search(TEXT);",
             "DROP TYPE IF EXISTS search_result CASCADE;",
@@ -146,10 +147,11 @@ class RISParser:
             r"""UPDATE citations SET kw_tsv = kw_tsv || setweight(to_tsvector('english', COALESCE(
                  (SELECT STRING_AGG(author_name, ' ') FROM authored_v WHERE citation = citations.id), '')), 'B');""",
             "CREATE INDEX kw_tsv_index ON citations USING GIN(kw_tsv);",
-            r"""CREATE FUNCTION ris_search(query TEXT) RETURNS SETOF search_result AS $$
+            r"""CREATE OR REPLACE FUNCTION ris_search(query TEXT) RETURNS SETOF search_result AS $$
                  SELECT id, title, substring(pub_date from 1 for 4)::INT AS pub_year, doc_type, ts_rank_cd(kw_tsv, to_tsquery(query))
                  FROM citations
                 WHERE kw_tsv @@ to_tsquery(query)
+                 AND merged_with IS NULL
                 ORDER BY 3 DESC$$ LANGUAGE SQL;""",
 
 

@@ -355,7 +355,9 @@ def home_html():
         with conn:
             with conn.cursor() as t:
                 t.execute(r"""SELECT COUNT(*)
-                    FROM citations;"""
+                    FROM citations
+                    WHERE merged_with IS NULL
+		    ;"""
                 )
                 total = t.fetchone()[0]
 
@@ -378,6 +380,7 @@ def home_html():
                 p.execute(r"""SELECT pub_title, COUNT(*)
                     FROM citations
                     WHERE pub_title IS NOT NULL
+                      AND merged_with IS NULL
                     GROUP BY pub_title
                     ORDER BY 2 DESC
                     LIMIT 50;"""
@@ -385,7 +388,11 @@ def home_html():
                 pubs = p.fetchall()
 
             with conn.cursor() as pc:
-                pc.execute(r"""WITH x AS (SELECT DISTINCT pub_title FROM citations)
+                pc.execute(r"""WITH x AS (
+                      SELECT DISTINCT pub_title
+		      FROM citations
+		      WHERE merged_with IS NULL
+                    )
                     SELECT COUNT(*) FROM x"""
                 )
                 pcnt = pc.fetchone()[0]
@@ -393,6 +400,7 @@ def home_html():
             with conn.cursor() as t:
                 t.execute(r"""SELECT doc_type, COUNT(*)
                     FROM citations
+                    WHERE merged_with IS NULL
                     GROUP BY doc_type
                     ORDER BY 2 DESC"""
                 )
@@ -402,6 +410,7 @@ def home_html():
             with conn.cursor() as c:
                 c.execute(r"""SELECT language, COUNT(*)
                     FROM citations
+                    WHERE merged_with IS NULL
                     GROUP BY language
                     ORDER BY 2 DESC"""
                 )
@@ -411,6 +420,7 @@ def home_html():
                 c.execute(r"""SELECT series, COUNT(*)
                     FROM citations
                     WHERE series IS NOT NULL
+                      AND merged_with IS NULL
                     GROUP BY series 
                     ORDER BY 2 DESC"""
                 )
