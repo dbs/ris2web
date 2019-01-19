@@ -369,10 +369,18 @@ def home_html():
                 )
                 total = t.fetchone()[0]
 
+            # Top cited authors and their counts
             with conn.cursor() as a:
-                a.execute(r"""SELECT id, author_name, COUNT(*)
-                    FROM authored_v
-                    GROUP BY id, author_name
+                a.execute(r"""
+                    WITH x AS (
+                        SELECT DISTINCT a.id AS author_id, a.author_name, c.id, c.title,
+                            substring(c.pub_date from 1 for 4)::INT AS pub_year,
+                            doc_type FROM citations c
+                        INNER JOIN authored_v a ON c.id = a.citation
+                    )
+                    SELECT author_id, author_name, COUNT(*)
+                    FROM x
+                    GROUP BY author_id, author_name
                     ORDER BY 3 DESC
                     LIMIT 50;"""
                 )
