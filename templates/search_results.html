@@ -4,17 +4,17 @@
 <section class="results">
 <span class="result_count">{{ results.start }} - {{ results.end }} of {{ results.cnt }}</span>
 {%- if results.q %}
-    {%- if results.page_next %}
+    {%- if results.page_next is not none %}
     <span class="pager"><a href="{{ url_for('search_results', search=results.q, offset=results.page_next, limit=results.limit, lang=_('en'))}}">{{ _('Next') }}</a></span>
     {%- endif %}
-    {%- if results.page_prev %}
+    {%- if results.page_prev is not none %}
     <span class="pager"><a href="{{ url_for('search_results', search=results.q, offset=results.page_prev, limit=results.limit, lang=_('en'))}}">{{ _('Previous') }}</a></span>
     {%- endif %}
 {%- elif results.facets %}
-    {%- if results.page_next %}
+    {%- if results.page_next is not none%}
     <span class="pager"><a href="{{ url_for('filter_citations', facets=results.facets, offset=results.page_next, limit=results.limit, lang=_('en'))}}">{{ _('Next') }}</a></span>
     {%- endif %}
-    {%- if results.page_prev %}
+    {%- if results.page_prev is not none %}
     <span class="pager"><a href="{{ url_for('filter_citations', facets=results.facets, offset=results.page_prev, limit=results.limit, lang=_('en'))}}">{{ _('Previous') }}</a></span>
     {%- endif %}
 {%- endif %}
