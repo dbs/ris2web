@@ -291,10 +291,18 @@ def filter_citations(facets=None, offset=0, limit=25):
         c = conn.cursor()
         if f.ftype == 'author':
             c.execute("SELECT COUNT(*) FROM author_citations(%s)", (f.val,))
-            s.execute("SELECT citation, title, pub_year, doc_type, rank FROM author_citations(%s) ORDER BY 2", (f.val,))
+            base_q = "SELECT citation, title, pub_year, doc_type, rank FROM author_citations(%s) ORDER BY 2 LIMIT %s"
+            if offset and limit:
+                s.execute(base_q + " OFFSET %s", (f.val, limit, offset,))
+            else:
+                s.execute(base_q, (f.val, limit))
         else:
             c.execute("SELECT COUNT(*) FROM ris_filter(%s, %s)", (f.ftype, f.val,))
-            s.execute("SELECT citation, title, pub_year, doc_type, rank FROM ris_filter(%s, %s) ORDER BY 2", (f.ftype, f.val,))
+            base_q = "SELECT citation, title, pub_year, doc_type, rank FROM ris_filter(%s, %s) ORDER BY 2 LIMIT %s"
+            if offset and limit:
+                s.execute(base_q + " OFFSET %s", (f.ftype, f.val, limit, offset,))
+            else:
+                s.execute(base_q, (f.ftype, f.val, limit))
 
         cnt = c.fetchone()[0]
 
