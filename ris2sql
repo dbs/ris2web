@@ -148,9 +148,9 @@ class RISParser:
                  (SELECT STRING_AGG(author_name, ' ') FROM authored_v WHERE citation = citations.id), '')), 'B');""",
             "CREATE INDEX kw_tsv_index ON citations USING GIN(kw_tsv);",
             r"""CREATE OR REPLACE FUNCTION ris_search(query TEXT) RETURNS SETOF search_result AS $$
-                 SELECT id, title, substring(pub_date from 1 for 4)::INT AS pub_year, doc_type, ts_rank_cd(kw_tsv, to_tsquery(query))
+                 SELECT id, title, substring(pub_date from 1 for 4)::INT AS pub_year, doc_type, ts_rank_cd(kw_tsv, plainto_tsquery(query))
                  FROM citations
-                WHERE kw_tsv @@ to_tsquery(query)
+                WHERE kw_tsv @@ plainto_tsquery(query)
                  AND merged_with IS NULL
                 ORDER BY 3 DESC$$ LANGUAGE SQL;""",
 
