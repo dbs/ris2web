@@ -860,8 +860,8 @@ def post_process(config, notes):
 def main():
     "Integrate the latest updates to the database"
 
-    write_updates = False
-    read_updates = True
+    write_updates = True
+    read_updates = False
     notes = []
 
     config = configparser.ConfigParser()
@@ -880,7 +880,7 @@ def main():
     zot = zotero.Zotero(config['zotero']['group'], 'group', config['zotero']['key'])
 
     # list_collections(zot)
-    if read_updates:
+    if read_updates and not write_updates:
         f = open('updates.json', 'r')
         items = json.load(f)
     else:
