@@ -74,6 +74,12 @@ machine using a browser pointed at http://localhost:5000.
 
 Pybabel is the utility used to pull out translateable text from templates/py files. Simply extract and update to put in new translations.
 
+------------------------------------------------------------
+pybabel extract -F babel.cfg -o messages.pot .
+pybabel update -i messages.pot -d translations
+pybabel compile -d translations
+------------------------------------------------------------
+
 === A note about committing translations ===
 
 When adding new messages to messages.pot or new translations to messages.po, ALWAYS make sure to only partially stage the actual messages added. Pybabel updates a header with the date of the last message extract, so it *will* cause a merge conflict if it's staged into the commit.
@@ -81,7 +87,7 @@ When adding new messages to messages.pot or new translations to messages.po, ALW
 == Updating the database
 
 . Back up the database with a command like `pg_dump --no-owner --clean --dbname bibliography > bibliography.sql`.
-. Update the value of `stop_date` in `config.ini` to the date of the most recent update.
+. Update the value of `stop_date` in `config.ini` to the date of the last update.
 . Start a pipenv shell: `pipenv shell`
 . Run the update: `./ris2web_api`
 . Start the web service and test out the changes: `./ris2web`
