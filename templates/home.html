@@ -21,7 +21,7 @@
           url_for('filter_citations', facets='author:' + author.0|striptags, lang=_('en'))
         }}">{{ author.1|striptags }}</a>
     </td>
-    <td>{{ author.2 }}</td>
+    <td class="count">{{ author.2 }}</td>
   </tr>
 {%- endfor %}
   </tbody>
@@ -41,7 +41,7 @@
       <a href="{{url_for('filter_citations', facets='publication:' + pub.0|striptags, lang=_('en'))}}">
       {%- endif %}{{ pub.0|striptags }}{%- if pub.0 %}</a>{%- endif %}
     </td>
-    <td>{{ pub.1 }}</td>
+    <td class="count">{{ pub.1 }}</td>
   </tr>
 {%- endfor %}
   </tbody>
@@ -61,7 +61,7 @@
       <a href="{{url_for('filter_citations', facets='doctype:' + pub.0|striptags, lang=_('en'))}}">
       {%- endif %}{{ _(pub.0|striptags) }}{%- if pub.0 %}</a>{%- endif %}
     </td>
-    <td>{{ pub.1 }}</td>
+    <td class="count">{{ pub.1 }}</td>
   </tr>
 {%- endfor %}
   </tbody>
@@ -77,7 +77,7 @@
 {%- for pub in summary.languages %}
   <tr class="{{ loop.cycle('odd', 'even') }}">
     <td class="pubtype">{{ pub.0|striptags }}</td>
-    <td>{{ pub.1 }}</td>
+    <td class="count">{{ pub.1 }}</td>
   </tr>
 {%- endfor %}
   </tbody>
@@ -99,7 +99,7 @@
         }}">
       {%- endif %}{{ pub.0|striptags }}{%- if pub.0 %}</a>{%- endif %}
     </td>
-    <td>{{ pub.1 }}</td>
+    <td class="count">{{ pub.1 }}</td>
   </tr>
 {%- endfor %}
   </tbody>

@@ -59,6 +59,10 @@ section.home_summary td.pub {
 td {
     border-bottom: 0.25em solid transparent;
 }
+td.count {
+  text-align: right;
+  padding-right: 1em;
+}
 th.numcites {
     width: 5em;
 }
