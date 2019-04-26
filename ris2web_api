@@ -257,7 +257,7 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
 
     def update_citation(self):
 
-        if 'title' not in self.cite:
+        if 'title' not in self.cite or self.cite['title'] is None:
             print(self.cite['zotero_key'])
             return False
 
