@@ -24,6 +24,7 @@ dt_map = {
     'Journal': 'JOUR',
     'Book': 'BOOK',
     'Book chapter': 'CHAP',
+    'Document': 'document',
     'Thesis': 'THES',
     'Web Page': 'ELEC',
     'Report': 'RPRT',
@@ -31,6 +32,7 @@ dt_map = {
     'Newspaper': 'NEWS',
     'Movie': 'MPCT',
     'General': 'GEN',
+    'TV Broadcast': 'tvBroadcast',
     'Video': 'VIDEO',
     'Case study': 'CASE',
     'Map': 'MAP'
