@@ -12,11 +12,11 @@
 <body>
 <header>
 <div class="header">
-  <h1><a href="{{ url_for('home_html', lang=_('en')) }}"</a>{{ _('Labour Studies Index') }}</a></h1><span class="updated">{{ _('Updated: %(update)s', update='2019-04-26') }}</span>
+  <h1><a href="{{ url_for('home_html', lang=_('en')) }}">{{ _('Labour Studies Index') }}</a></h1><span class="updated">{{ _('Updated: %(update)s', update='2019-04-26') }}</span>
 </div>
 <div class="searchbox">
     <form action="{{ url_for('search_bar', lang=_('en')) }}">
-        <label>{{ _('Search: ') }}<input type="search" name="s" autocomplete="on"></input></label>
+        <label>{{ _('Search: ') }}<input type="search" name="s" autocomplete="on" /></label>
         <input type="submit" value="{{ _('Submit') }}" />
         
         <a style="color: #FFF; margin-left: 3em;" href="{{ url_for('home_html', lang=_('fr')) }}">{{ _('Français') }}</a>
