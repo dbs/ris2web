@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Citation: ') }}{{ record.title|escape }}{% endblock %}
+{% block header %}<link rel="alternate" type="application/x-research-info-systems" title="RIS citation" href="https://api.zotero.org/groups/290262/items/{{ record.zotero_key|escape }}?v=3&amp;format=ris">{% endblock %}
 {%- macro author_block(author, heading, sprop) -%}
 <tr>
   <th>{{ heading }}</th>

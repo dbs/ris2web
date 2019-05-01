@@ -88,6 +88,7 @@ class RIS:
         self.url = record[24]
         self.volume = record[25]
         self.access_date = record[26]
+        self.zotero_key = record[27]
         self.init_authors(authors)
         self.kw = kw
         self.notes = notes
@@ -201,7 +202,8 @@ def citation_html(work_id):
                 pub_date, doi, pub_database, end_page, edition, issue_number, \
                 alternate_title, local_url, language, id_number, work_type, \
                 publisher, pub_year, isbn_issn, start_page, short_title, \
-                title2, title3, title, doc_type, url, volume, access_date \
+                title2, title3, title, doc_type, url, volume, access_date, \
+                zotero_key \
             FROM citations \
             WHERE id = %s", (work_id,))
         record = works.fetchone()
