@@ -32,6 +32,8 @@ dt_map = {
     'Newspaper': 'NEWS',
     'Movie': 'MPCT',
     'General': 'GEN',
+    'Podcast': 'podcast',
+    'Radio Broadcast': 'radioBroadcast',
     'TV Broadcast': 'tvBroadcast',
     'Video': 'VIDEO',
     'Case study': 'CASE',
