@@ -1,8 +1,16 @@
 #!/usr/bin/env python3
 "Converts a database of RIS into HTML"
 
-from flask import Flask, abort, redirect, request, render_template, url_for, \
-                    send_from_directory, session
+from flask import (
+    Flask,
+    abort,
+    redirect,
+    request,
+    render_template,
+    url_for,
+    send_from_directory,
+    session,
+)
 import flask
 from flask_babelex import Babel, _
 from os.path import abspath, dirname
@@ -11,37 +19,38 @@ import logging
 import psycopg2
 import re
 
-app = Flask(__name__, static_folder='static')
+app = Flask(__name__, static_folder="static")
 app.root_path = abspath(dirname(__file__))
-app.url_base = '/'
+app.url_base = "/"
 babel = Babel(app)
 config = configparser.ConfigParser()
-config.read(app.root_path + '/config.ini')
+config.read(app.root_path + "/config.ini")
 
 dt_map_r = {}
 dt_map = {
-    'Article': 'JOUR',
-    'Journal': 'JOUR',
-    'Book': 'BOOK',
-    'Book chapter': 'CHAP',
-    'Document': 'document',
-    'Thesis': 'THES',
-    'Web Page': 'ELEC',
-    'Report': 'RPRT',
-    'Magazine': 'MGZN',
-    'Newspaper': 'NEWS',
-    'Movie': 'MPCT',
-    'Podcast': 'podcast',
-    'General': 'GEN',
-    'Radio Broadcast': 'radioBroadcast',
-    'TV Broadcast': 'tvBroadcast',
-    'Video': 'VIDEO',
-    'Case study': 'CASE',
-    'Map': 'MAP'
+    "Article": "JOUR",
+    "Journal": "JOUR",
+    "Book": "BOOK",
+    "Book chapter": "CHAP",
+    "Document": "document",
+    "Thesis": "THES",
+    "Web Page": "ELEC",
+    "Report": "RPRT",
+    "Magazine": "MGZN",
+    "Newspaper": "NEWS",
+    "Movie": "MPCT",
+    "Podcast": "podcast",
+    "General": "GEN",
+    "Radio Broadcast": "radioBroadcast",
+    "TV Broadcast": "tvBroadcast",
+    "Video": "VIDEO",
+    "Case study": "CASE",
+    "Map": "MAP",
 }
 
 for key in dt_map:
-    dt_map_r[dt_map[key]] = key;
+    dt_map_r[dt_map[key]] = key
+
 
 class Author:
     "Models an author"
@@ -54,8 +63,9 @@ class Author:
         self.uri = []
         u = 0
         for uri in record[3]:
-            self.uri.append({'uri': uri, 'cat': record[4][u]})
+            self.uri.append({"uri": uri, "cat": record[4][u]})
             u += 1
+
 
 class RIS:
     "Models a RIS record"
@@ -109,48 +119,49 @@ class RIS:
 
         See http://en.wikipedia.org/wiki/RIS_%28file_format%29#Type_of_reference
         """
-        if self.doc_type == 'JOUR':
-            self.schema_type = 'ScholarlyArticle'
-            self.pub_venue = 'Periodical'
-            self.doc_type_human = 'Article'
-        elif self.doc_type == 'CHAP':
-            self.schema_type = 'Article'
-            self.pub_venue = 'Book'
-            self.doc_type_human = 'Book chapter'
-        elif self.doc_type == 'BOOK':
-            self.schema_type = 'Book'
-            self.pub_venue = 'Book'
-            self.doc_type_human = 'Book'
-        elif self.doc_type == 'THES':
-            self.schema_type = 'ScholarlyArticle'
-            self.pub_venue = 'Periodical'
-            self.doc_type_human = 'Thesis'
-        elif self.doc_type == 'RPRT':
-            self.schema_type = 'Article'
-            self.pub_venue = 'Periodical'
-            self.doc_type_human = 'Report'
-        elif self.doc_type == 'MGZN':
-            self.schema_type = 'Article'
-            self.pub_venue = 'Periodical'
-            self.doc_type_human = 'Article'
-        elif self.doc_type == 'BLOG':
-            self.schema_type = 'BlogPosting'
-            self.pub_venue = 'Blog'
-            self.doc_type_human = 'Blog post'
-        elif self.doc_type == 'MPCT':
-            self.schema_type = 'Movie'
-            self.doc_type_human = 'Movie'
-        elif self.doc_type == 'ELEC':
-            self.schema_type = 'WebPage'
-            self.doc_type_human = 'Web page'
-        elif self.doc_type == 'CASE':
-            self.schema_type = 'CreativeWork'
-            self.doc_type_human = 'Case study'
-        elif self.doc_type == 'MAP':
-            self.schema_type = 'Map'
-            self.doc_type_human = 'Map'
+        if self.doc_type == "JOUR":
+            self.schema_type = "ScholarlyArticle"
+            self.pub_venue = "Periodical"
+            self.doc_type_human = "Article"
+        elif self.doc_type == "CHAP":
+            self.schema_type = "Article"
+            self.pub_venue = "Book"
+            self.doc_type_human = "Book chapter"
+        elif self.doc_type == "BOOK":
+            self.schema_type = "Book"
+            self.pub_venue = "Book"
+            self.doc_type_human = "Book"
+        elif self.doc_type == "THES":
+            self.schema_type = "ScholarlyArticle"
+            self.pub_venue = "Periodical"
+            self.doc_type_human = "Thesis"
+        elif self.doc_type == "RPRT":
+            self.schema_type = "Article"
+            self.pub_venue = "Periodical"
+            self.doc_type_human = "Report"
+        elif self.doc_type == "MGZN":
+            self.schema_type = "Article"
+            self.pub_venue = "Periodical"
+            self.doc_type_human = "Article"
+        elif self.doc_type == "BLOG":
+            self.schema_type = "BlogPosting"
+            self.pub_venue = "Blog"
+            self.doc_type_human = "Blog post"
+        elif self.doc_type == "MPCT":
+            self.schema_type = "Movie"
+            self.doc_type_human = "Movie"
+        elif self.doc_type == "ELEC":
+            self.schema_type = "WebPage"
+            self.doc_type_human = "Web page"
+        elif self.doc_type == "CASE":
+            self.schema_type = "CreativeWork"
+            self.doc_type_human = "Case study"
+        elif self.doc_type == "MAP":
+            self.schema_type = "Map"
+            self.doc_type_human = "Map"
         else:
-            self.schema_type = 'CreativeWork'
+            self.schema_type = "CreativeWork"
+
 
 def get_db():
     """
@@ -163,34 +174,37 @@ def get_db():
 
     try:
         conn = psycopg2.connect(
-            database=config['database']['dbname'],
-            user=config['database']['dbuser']
+            database=config["database"]["dbname"], user=config["database"]["dbuser"]
         )
         return conn
     except Exception as e:
         print(e)
 
+
 @app.before_request
 def pre_request():
-    if request.view_args and 'lang' in request.view_args:
-        lang = request.view_args['lang']
-        if lang in ['en', 'fr']:
+    if request.view_args and "lang" in request.view_args:
+        lang = request.view_args["lang"]
+        if lang in ["en", "fr"]:
             flask.g.current_lang = lang
-            request.view_args.pop('lang')
+            request.view_args.pop("lang")
         else:
             return abort(404)
-    
+
+
 @babel.localeselector
 def get_language():
-    return flask.g.get('current_lang', 'en')
+    return flask.g.get("current_lang", "en")
 
-@app.route('/<lang>/citation/<int:work_id>')
+
+@app.route("/<lang>/citation/<int:work_id>")
 def show_citation(work_id=None):
     "Show the specified work"
     if work_id:
         return citation_html(work_id)
     else:
         return home_html()
+
 
 def citation_html(work_id):
     "Show a single citation"
@@ -200,42 +214,57 @@ def citation_html(work_id):
         authors = conn.cursor()
         kw = conn.cursor()
         notes = conn.cursor()
-        works.execute("SELECT id, abstract, call_number, pub_place, \
+        works.execute(
+            "SELECT id, abstract, call_number, pub_place, \
                 pub_date, doi, pub_database, end_page, edition, issue_number, \
                 alternate_title, local_url, language, id_number, work_type, \
                 publisher, pub_year, isbn_issn, start_page, short_title, \
                 title2, title3, title, doc_type, url, volume, access_date, \
                 zotero_key \
             FROM citations \
-            WHERE id = %s", (work_id,))
+            WHERE id = %s",
+            (work_id,),
+        )
         record = works.fetchone()
-        authors.execute(r"""SELECT id, author_type, author_name,
+        authors.execute(
+            r"""SELECT id, author_type, author_name,
                 array(SELECT uri FROM author_uri_v WHERE id = av.id ORDER BY uid) AS uri,
                 array(SELECT cat FROM author_uri_v WHERE id = av.id ORDER BY uid) AS uricat
             FROM authored_v av
             WHERE citation = %s
-            ORDER BY id ASC""", (record[0],)
+            ORDER BY id ASC""",
+            (record[0],),
         )
-        kw.execute("SELECT keywords FROM citation_keywords WHERE citation = %s ORDER BY keywords", (record[0],))
-        notes.execute("SELECT notes FROM citation_notes WHERE citation = %s ORDER BY id ASC", (record[0],))
+        kw.execute(
+            "SELECT keywords FROM citation_keywords WHERE citation = %s ORDER BY keywords",
+            (record[0],),
+        )
+        notes.execute(
+            "SELECT notes FROM citation_notes WHERE citation = %s ORDER BY id ASC",
+            (record[0],),
+        )
         r = RIS(record, authors, kw.fetchall(), notes.fetchall())
-        return render_template('citation.html', record=r)
+        return render_template("citation.html", record=r)
         works.close()
         authors.close()
         kw.close()
         notes.close()
     except Exception as e:
-        logging.exception('Failed to show citation %d' % (work_id))
+        logging.exception("Failed to show citation %d" % (work_id))
         return abort(500)
 
-@app.route('/<lang>/search', methods=['GET', 'POST'])
+
+@app.route("/<lang>/search", methods=["GET", "POST"])
 def search_bar(search=None):
     "Show the results of a search with GET"
-    s = request.args.get('s', '')
-    return redirect(url_for('search_results', search=s, lang=_('en')))
+    s = request.args.get("s", "")
+    return redirect(url_for("search_results", search=s, lang=_("en")))
 
-@app.route('/<lang>/search/<path:search>/<int:offset>/<int:limit>', methods=['GET', 'POST'])
-@app.route('/<lang>/search/<path:search>', methods=['GET', 'POST'])
+
+@app.route(
+    "/<lang>/search/<path:search>/<int:offset>/<int:limit>", methods=["GET", "POST"]
+)
+@app.route("/<lang>/search/<path:search>", methods=["GET", "POST"])
 def search_results(search=None, offset=0, limit=25):
     "Show the results of a search"
 
@@ -256,21 +285,25 @@ def search_results(search=None, offset=0, limit=25):
         (end, page_next, page_prev) = pager(limit, offset, cnt)
 
         if not cnt:
-            return render_template('search_empty.html', q=search)
+            return render_template("search_empty.html", q=search)
 
-        return render_template('search_results.html', results={
-            'q': search,
-            'r': s.fetchall(),
-            'cnt': cnt,
-            'limit': limit,
-            'start': offset + 1,
-            'end': end,
-            'page_next': page_next,
-            'page_prev': page_prev
-        })
+        return render_template(
+            "search_results.html",
+            results={
+                "q": search,
+                "r": s.fetchall(),
+                "cnt": cnt,
+                "limit": limit,
+                "start": offset + 1,
+                "end": end,
+                "page_next": page_next,
+                "page_prev": page_prev,
+            },
+        )
     except Exception as e:
-        logging.exception('Failed to show search results')
+        logging.exception("Failed to show search results")
         return abort(500)
+
 
 def pager(limit, offset, cnt):
     "Figure out the paging"
@@ -283,10 +316,13 @@ def pager(limit, offset, cnt):
     if not offset:
         page_prev = None
 
-    return(end, page_next, page_prev)
+    return (end, page_next, page_prev)
 
-@app.route('/<lang>/filter/<path:facets>/<int:offset>/<int:limit>', methods=['GET', 'POST'])
-@app.route('/<lang>/filter/<path:facets>', methods=['GET', 'POST'])
+
+@app.route(
+    "/<lang>/filter/<path:facets>/<int:offset>/<int:limit>", methods=["GET", "POST"]
+)
+@app.route("/<lang>/filter/<path:facets>", methods=["GET", "POST"])
 def filter_citations(facets=None, offset=0, limit=25):
     "Facet results by publication, document type, keyword"
 
@@ -295,7 +331,7 @@ def filter_citations(facets=None, offset=0, limit=25):
         s = conn.cursor()
         f = Facet(facets)
         c = conn.cursor()
-        if f.ftype == 'author':
+        if f.ftype == "author":
             c.execute("SELECT COUNT(*) FROM author_citations(%s)", (f.val,))
             base_q = "SELECT citation, title, pub_year, doc_type, rank FROM author_citations(%s) ORDER BY 2 LIMIT %s"
             if offset and limit:
@@ -315,28 +351,33 @@ def filter_citations(facets=None, offset=0, limit=25):
         (end, page_next, page_prev) = pager(limit, offset, cnt)
 
         if not cnt:
-            return render_template('search_empty.html', q=f.val)
+            return render_template("search_empty.html", q=f.val)
 
-        return render_template('search_results.html', results={
-            'facets': facets,
-            'r': s.fetchall(),
-            'cnt':cnt,
-            'limit': limit,
-            'start': offset + 1,
-            'end': end,
-            'page_next': page_next,
-            'page_prev': page_prev
-        })
+        return render_template(
+            "search_results.html",
+            results={
+                "facets": facets,
+                "r": s.fetchall(),
+                "cnt": cnt,
+                "limit": limit,
+                "start": offset + 1,
+                "end": end,
+                "page_next": page_next,
+                "page_prev": page_prev,
+            },
+        )
     except Exception as e:
-        logging.exception('Failed to filter citations')
+        logging.exception("Failed to filter citations")
         return abort(500)
+
 
 def risdate2human(date):
     "Turn a RIS date <YYYY>/<MM>/<DD>/<other> into human-friendly"
 
     if not date:
         return None
-    return date.replace('/', ' ')
+    return date.replace("/", " ")
+
 
 def parse_query(q):
     """
@@ -347,19 +388,21 @@ def parse_query(q):
     """
 
     q = " %s" % (q)
-    q = q.replace(' AND ', ' & ')
-    q = q.replace(' OR ', ' | ')
-    q = q.replace(' NOT ', ' &! ')
+    q = q.replace(" AND ", " & ")
+    q = q.replace(" OR ", " | ")
+    q = q.replace(" NOT ", " &! ")
     # Finally, replace all spaces with AND operator
-    q = re.sub(r'([^&|!]) ([^&|!])', r'\1 & \2', q)
+    q = re.sub(r"([^&|!]) ([^&|!])", r"\1 & \2", q)
     return q
 
-@app.route('/')
+
+@app.route("/")
 def index():
     "Redirect to the English page, if given no language"
-    return redirect(url_for('home_html', lang='en'))
+    return redirect(url_for("home_html", lang="en"))
 
-@app.route('/<lang>/')
+
+@app.route("/<lang>/")
 def home_html():
     "Home page"
 
@@ -368,7 +411,8 @@ def home_html():
         conn = get_db()
         with conn:
             with conn.cursor() as t:
-                t.execute(r"""SELECT COUNT(*)
+                t.execute(
+                    r"""SELECT COUNT(*)
                     FROM citations
                     WHERE merged_with IS NULL
 		    ;"""
@@ -377,7 +421,8 @@ def home_html():
 
             # Top cited authors and their counts
             with conn.cursor() as a:
-                a.execute(r"""
+                a.execute(
+                    r"""
                     WITH x AS (
                         SELECT DISTINCT a.id AS author_id, a.author_name, c.id, c.title,
                             substring(c.pub_date from 1 for 4)::INT AS pub_year,
@@ -393,13 +438,15 @@ def home_html():
                 authors = a.fetchall()
 
             with conn.cursor() as ac:
-                ac.execute(r"""WITH x AS (SELECT DISTINCT author_name FROM authored_v)
+                ac.execute(
+                    r"""WITH x AS (SELECT DISTINCT author_name FROM authored_v)
                     SELECT COUNT(*) FROM x"""
                 )
                 acnt = ac.fetchone()[0]
 
             with conn.cursor() as p:
-                p.execute(r"""SELECT pub_title, COUNT(*)
+                p.execute(
+                    r"""SELECT pub_title, COUNT(*)
                     FROM citations
                     WHERE pub_title IS NOT NULL
                       AND merged_with IS NULL
@@ -410,7 +457,8 @@ def home_html():
                 pubs = p.fetchall()
 
             with conn.cursor() as pc:
-                pc.execute(r"""WITH x AS (
+                pc.execute(
+                    r"""WITH x AS (
                       SELECT DISTINCT pub_title
 		      FROM citations
 		      WHERE merged_with IS NULL
@@ -420,7 +468,8 @@ def home_html():
                 pcnt = pc.fetchone()[0]
 
             with conn.cursor() as t:
-                t.execute(r"""SELECT doc_type, COUNT(*)
+                t.execute(
+                    r"""SELECT doc_type, COUNT(*)
                     FROM citations
                     WHERE merged_with IS NULL
                     GROUP BY doc_type
@@ -430,7 +479,8 @@ def home_html():
                     types.append((dt_map_r[dt[0]], dt[1]))
 
             with conn.cursor() as c:
-                c.execute(r"""SELECT language, COUNT(*)
+                c.execute(
+                    r"""SELECT language, COUNT(*)
                     FROM citations
                     WHERE merged_with IS NULL
                     GROUP BY language
@@ -439,7 +489,8 @@ def home_html():
                 langs = c.fetchall()
 
             with conn.cursor() as c:
-                c.execute(r"""SELECT series, COUNT(*)
+                c.execute(
+                    r"""SELECT series, COUNT(*)
                     FROM citations
                     WHERE series IS NOT NULL
                       AND merged_with IS NULL
@@ -450,19 +501,23 @@ def home_html():
 
         conn.close()
 
-        return render_template('home.html', summary={
-            'total': total,
-            'authors': authors,
-            'acnt': acnt,
-            'pubs': pubs,
-            'pcnt': pcnt,
-            'types': types,
-            'languages': langs,
-            'series': series
-        })
+        return render_template(
+            "home.html",
+            summary={
+                "total": total,
+                "authors": authors,
+                "acnt": acnt,
+                "pubs": pubs,
+                "pcnt": pcnt,
+                "types": types,
+                "languages": langs,
+                "series": series,
+            },
+        )
     except Exception as e:
-        logging.exception('Failed to show home page')
+        logging.exception("Failed to show home page")
         abort(500)
+
 
 class Facet:
     """
@@ -473,16 +528,16 @@ class Facet:
 
     def __init__(self, facets):
         self.ft_map = {
-            'doctype': 'doc_type',
-            'publication': 'pub_title',
-            'keyword': 'keyword',
-            'author': 'author',
-            'series': 'series'
+            "doctype": "doc_type",
+            "publication": "pub_title",
+            "keyword": "keyword",
+            "author": "author",
+            "series": "series",
         }
 
-        f = facets.split(':', 1)
+        f = facets.split(":", 1)
         self.ftype = self.get_db_ftype(f[0])
-        if self.ftype == 'doc_type':
+        if self.ftype == "doc_type":
             self.val = self.get_db_doctype(f[1])
         else:
             self.val = f[1]
@@ -499,5 +554,6 @@ class Facet:
         else:
             return None
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app.run(debug=False)

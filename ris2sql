@@ -14,57 +14,65 @@
 # Then iterate over all of the objects, dumping output into appropriate files:
 #
 # for rec in record:
-#     if 
+#     if
 
 import os
 import sys
+
 
 class RISParser:
 
     # We expect each of these fields to appear only once for a given citation
     core_map = {
-        'AB': 'abstract',
-        'DA': 'pub_date',
-        'DP': 'pub_database',
-        'SP': 'start_page',
-        'EP': 'end_page',
-        'LA': 'language',
-        'CN': 'call_number',
-        'CY': 'pub_place',
-        'M3': 'work_type',
-        'PB': 'publisher',
-        'PY': 'pub_year',
-        'TY': 'doc_type', # type of the cited document
-        'TI': 'title',
-        'T2': 'title2',
-        'T3': 'title3',
-        'J2': 'alternate_title', # often abbrev. journal or book title
-        'ST': 'short_title', # often abbrev. journal or book title
-        'DO': 'doi',
-        'UR': 'url',
-        'L2': 'local_url',
-        'SN': 'isbn_issn',
-        'ET': 'edition',
-        'M1': 'id_number',
-        'IS': 'issue_number',
-        'VL': 'volume',
-        'Y2': 'access_date'
+        "AB": "abstract",
+        "DA": "pub_date",
+        "DP": "pub_database",
+        "SP": "start_page",
+        "EP": "end_page",
+        "LA": "language",
+        "CN": "call_number",
+        "CY": "pub_place",
+        "M3": "work_type",
+        "PB": "publisher",
+        "PY": "pub_year",
+        "TY": "doc_type",  # type of the cited document
+        "TI": "title",
+        "T2": "title2",
+        "T3": "title3",
+        "J2": "alternate_title",  # often abbrev. journal or book title
+        "ST": "short_title",  # often abbrev. journal or book title
+        "DO": "doi",
+        "UR": "url",
+        "L2": "local_url",
+        "SN": "isbn_issn",
+        "ET": "edition",
+        "M1": "id_number",
+        "IS": "issue_number",
+        "VL": "volume",
+        "Y2": "access_date",
     }
 
     # multiple authors / editors per citation
     # see http://refdb.sourceforge.net/manual/ch07.html#sect1-ris-format
     # but Zotero exports "series_editor" as A2 and "editor" as A3, argh
     author_map = {
-        'AU': 'author',
-        'A3': 'editor',
-        'A2': 'series_editor',
-        'A4': 'translator',
-        'A5': 'contributor'
+        "AU": "author",
+        "A3": "editor",
+        "A2": "series_editor",
+        "A4": "translator",
+        "A5": "contributor",
     }
 
-    skip_keys = ('L1', 'L4')
+    skip_keys = ("L1", "L4")
 
-    def __init__(self, ris_f="cawls.ris", core_f="core.sql", authors="authors.sql", kw_f="keywords.sql", notes_f="notes.sql"):
+    def __init__(
+        self,
+        ris_f="cawls.ris",
+        core_f="core.sql",
+        authors="authors.sql",
+        kw_f="keywords.sql",
+        notes_f="notes.sql",
+    ):
         self.rec = 0
         self.core = {}
         self.init_core()
@@ -153,8 +161,6 @@ class RISParser:
                 WHERE kw_tsv @@ plainto_tsquery(query)
                  AND merged_with IS NULL
                 ORDER BY 3 DESC$$ LANGUAGE SQL;""",
-
-
         ]
         self.sql_author_adds = [
             r"""CREATE TABLE authors (id SERIAL, author_name TEXT);"""
@@ -167,18 +173,19 @@ class RISParser:
             r"""ALTER TABLE cites_to_authors DROP COLUMN author_name;""",
             r"""CREATE VIEW authored_v AS
                     SELECT citation, id, author_type, author_name
-                    FROM authors INNER JOIN cites_to_authors ON author = id;"""
+                    FROM authors INNER JOIN cites_to_authors ON author = id;""",
         ]
+
     def init_core(self):
-        self.authors = [] 
-        self.keywords = [] 
+        self.authors = []
+        self.keywords = []
         self.notes = []
-        self.lastkey = "" 
+        self.lastkey = ""
         self.lastval = ""
         for v in RISParser.core_map.values():
             self.core[v] = None
 
-    def sql_header_core(self, table='citations'):
+    def sql_header_core(self, table="citations"):
         sql = "DROP TABLE IF EXISTS %s; CREATE TABLE %s(id INTEGER, " % (table, table)
         for key in sorted(self.core_map.keys()):
             sql = sql + "%s TEXT, " % (self.core_map[key])
@@ -200,17 +207,21 @@ class RISParser:
         self.authors_f.write(sql)
 
     def sql_header_keywords(self, table="keywords"):
-        sql = "DROP TABLE IF EXISTS citation_keywords;\n" \
-            + "CREATE TABLE citation_keywords(id SERIAL, citation INTEGER, " \
-            + "keywords TEXT);\n" \
+        sql = (
+            "DROP TABLE IF EXISTS citation_keywords;\n"
+            + "CREATE TABLE citation_keywords(id SERIAL, citation INTEGER, "
+            + "keywords TEXT);\n"
             + "COPY citation_keywords(citation, keywords) FROM STDIN;\n"
+        )
         self.kw_f.write(sql)
 
     def sql_header_notes(self, table="notes"):
-        sql = "DROP TABLE IF EXISTS citation_notes;\n" \
-            + "CREATE TABLE citation_notes(id SERIAL, citation INTEGER, " \
-            + "notes TEXT);\n" \
+        sql = (
+            "DROP TABLE IF EXISTS citation_notes;\n"
+            + "CREATE TABLE citation_notes(id SERIAL, citation INTEGER, "
+            + "notes TEXT);\n"
             + "COPY citation_notes(citation, notes) FROM STDIN;\n"
+        )
         self.notes_f.write(sql)
 
     def close_sql(self):
@@ -226,10 +237,10 @@ class RISParser:
     def parse(self, line):
         if len(line) == 1:
             pass
-        elif line[0:-1] == 'ER  - ':
+        elif line[0:-1] == "ER  - ":
             self.store()
             self.printem()
-        elif line[2:6] == '  - ':
+        elif line[2:6] == "  - ":
             self.store()
             self.lastkey = line[0:2]
             self.lastval = line[6:].strip()
@@ -250,10 +261,10 @@ class RISParser:
             val = self.core[self.core_map[key]]
             if not val:
                 val = "\\N"
-            val = val.replace('\t', ' ')
+            val = val.replace("\t", " ")
             self.core_f.write("\t%s" % (val))
         self.core_f.write("\n")
-        
+
     def write_authors(self):
         for x, y in self.authors:
             self.authors_f.write("%d\t%s\t%s\n" % (self.rec, x, y))
@@ -271,9 +282,9 @@ class RISParser:
             self.core[RISParser.core_map[self.lastkey]] = self.lastval
         elif self.lastkey in RISParser.author_map:
             self.authors.append(([RISParser.author_map[self.lastkey], self.lastval]))
-        elif self.lastkey == 'KW':
+        elif self.lastkey == "KW":
             self.keywords.append(self.lastval)
-        elif self.lastkey == 'N1':
+        elif self.lastkey == "N1":
             self.notes.append(self.lastval)
         elif self.lastkey in RISParser.skip_keys:
             pass
@@ -286,6 +297,13 @@ class RISParser:
                 self.parse(line)
         self.close_sql()
 
+
 if __name__ == "__main__":
-    foo = RISParser(ris_f="cawls.ris", core_f="core.sql", authors="authors.sql", kw_f="keywords.sql", notes_f="notes.sql")
+    foo = RISParser(
+        ris_f="cawls.ris",
+        core_f="core.sql",
+        authors="authors.sql",
+        kw_f="keywords.sql",
+        notes_f="notes.sql",
+    )
     foo.parsefile()

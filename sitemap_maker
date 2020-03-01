@@ -6,29 +6,34 @@ import psycopg2
 
 root_path = abspath(dirname(__file__))
 config = configparser.ConfigParser()
-config.read(root_path + '/config.ini')
+config.read(root_path + "/config.ini")
 
-robots = open('static/robots.txt', 'w')
-robots.write(r"""User-agent: *
+robots = open("static/robots.txt", "w")
+robots.write(
+    r"""User-agent: *
 Allow: /
 
 Sitemap: https://labourstudies.ca/sitemap.xml
-""")
-
-sm = open('static/sitemap.xml', 'w')
-conn = psycopg2.connect(
-    database=config['database']['dbname'],
-    user=config['database']['dbuser']
+"""
 )
-sm.write(r"""<?xml version="1.0" encoding="UTF-8"?>
+
+sm = open("static/sitemap.xml", "w")
+conn = psycopg2.connect(
+    database=config["database"]["dbname"], user=config["database"]["dbuser"]
+)
+sm.write(
+    r"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-""")
+"""
+)
 
 with conn:
     # citations
     with conn.cursor() as c:
         c.execute(r"""SELECT id FROM citations ORDER BY id DESC""")
         for r in c:
-            sm.write("<url><loc>https://labourstudies.ca/citation/%d</loc></url>\n" % (r[0]))
+            sm.write(
+                "<url><loc>https://labourstudies.ca/citation/%d</loc></url>\n" % (r[0])
+            )
 
 sm.write("</urlset>")

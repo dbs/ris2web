@@ -97,6 +97,7 @@ import psycopg2
 import configparser
 from os.path import abspath, dirname
 
+
 class ZoteroParser:
     """Read a Zotero item and parse it into its unique fields
 
@@ -105,72 +106,74 @@ class ZoteroParser:
 
     # We expect each of these fields to appear only once for a given citation
     core_map = {
-        'abstractNote': 'abstract',
-        'accessDate': 'access_date',
-        'callNumber': 'call_number',
-        'date': 'pub_date',
+        "abstractNote": "abstract",
+        "accessDate": "access_date",
+        "callNumber": "call_number",
+        "date": "pub_date",
         #'date': 'pub_year',
-        'DOI': 'doi',
-        'edition': 'edition',
-        'endPage': 'end_page', # we get this from parsing
-        'ISBN': 'isbn_issn',
-        'ISSN': 'isbn_issn',
-        'issue': 'issue_number',
-        'itemType': 'doc_type', # type of the cited document
-        'journalAbbreviation': 'alternate_title', # often abbrev. journal or book title
-        'key': 'zotero_key',
-        'language': 'language',
-        'libraryCatalog': 'pub_database',
-        'pages': 'start_page',
-        'numPages': 'start_page',
-        'place': 'pub_place', # book
-        'publicationTitle': 'pub_title',
-        'publisher': 'publisher', # book
-        'rights': 'rights',
-        'seriesNumber': 'id_number',
-        'series': 'series',
+        "DOI": "doi",
+        "edition": "edition",
+        "endPage": "end_page",  # we get this from parsing
+        "ISBN": "isbn_issn",
+        "ISSN": "isbn_issn",
+        "issue": "issue_number",
+        "itemType": "doc_type",  # type of the cited document
+        "journalAbbreviation": "alternate_title",  # often abbrev. journal or book title
+        "key": "zotero_key",
+        "language": "language",
+        "libraryCatalog": "pub_database",
+        "pages": "start_page",
+        "numPages": "start_page",
+        "place": "pub_place",  # book
+        "publicationTitle": "pub_title",
+        "publisher": "publisher",  # book
+        "rights": "rights",
+        "seriesNumber": "id_number",
+        "series": "series",
         #'series': 'title2',
         #'series': 'title3',
-        'shortTitle': 'short_title', # often abbrev. journal or book title
-        'thesisType': 'work_type',
-        'title': 'title',
+        "shortTitle": "short_title",  # often abbrev. journal or book title
+        "thesisType": "work_type",
+        "title": "title",
         #'url': 'local_url',
-        'university': 'publisher',
-        'url': 'url',
-        'volume': 'volume'
+        "university": "publisher",
+        "url": "url",
+        "volume": "volume",
     }
 
     # multiple authors / editors per citation
     # see http://refdb.sourceforge.net/manual/ch07.html#sect1-ris-format
     # but Zotero exports "series_editor" as A2 and "editor" as A3, argh
     author_map = {
-        'AU': 'author',
-        'A3': 'editor',
-        'A2': 'series_editor',
-        'A4': 'translator',
-        'A5': 'contributor'
+        "AU": "author",
+        "A3": "editor",
+        "A2": "series_editor",
+        "A4": "translator",
+        "A5": "contributor",
     }
 
     def __init__(self, item, config, notes):
         "Parse it up"
 
-        self.add_date = datetime.datetime.strptime(item['data']['dateAdded'], '%Y-%m-%dT%H:%M:%SZ')
+        self.add_date = datetime.datetime.strptime(
+            item["data"]["dateAdded"], "%Y-%m-%dT%H:%M:%SZ"
+        )
         self.notes = notes
         self.cite = {}
         self.authors = []
         self.keywords = []
         self.config = config
         self.get_db()
-        if item['data']['itemType'] == 'attachment':
+        if item["data"]["itemType"] == "attachment":
             return
 
-        if item['data']['itemType'] == 'note':
+        if item["data"]["itemType"] == "note":
             self.parse_notes(item)
             return
 
         for zot, ris in ZoteroParser.core_map.items():
-            if zot in item['data']:
-                z = item['data'][zot]
+            if zot in item["data"]:
+                z = item["data"][zot]
                 if z == "" and ris not in self.cite:
                     self.cite[ris] = None
                 else:
@@ -178,100 +181,152 @@ class ZoteroParser:
             elif ris not in self.cite:
                 self.cite[ris] = None
 
-        if 'creators' in item['data']:
+        if "creators" in item["data"]:
             self.authorship(item)
 
-        if 'tags' in item['data']:
+        if "tags" in item["data"]:
             self.parse_tags(item)
 
         self.map_doc_type()
         self.map_pages()
 
-        #print(json.dumps(self.cite, sort_keys=True, indent=4))
+        # print(json.dumps(self.cite, sort_keys=True, indent=4))
 
-        self.cite['source'] = json.dumps(item['data'])
-        #print(json.dumps(self.authors))
+        self.cite["source"] = json.dumps(item["data"])
+        # print(json.dumps(self.authors))
 
     def map_doc_type(self):
         "Map Zotero doc types to RIS doc types"
 
         z_to_r = {
-            'journalArticle': 'JOUR',
-            'book': 'BOOK',
-            'bookSection': 'CHAP',
-            'thesis': 'THES',
-            'report': 'RPRT',
-            'webpage': 'ELEC',
-            'magazineArticle': 'MGZN',
-            'newspaperArticle': 'JOUR',
-            'film': 'MPCT',
-            'videoRecording': 'VIDEO',
-            'map': 'MAP',
-            'blogPost': 'ELEC',
-            'encyclopediaArticle': 'JOUR',
-            'conferencePaper': 'JOUR'
+            "journalArticle": "JOUR",
+            "book": "BOOK",
+            "bookSection": "CHAP",
+            "thesis": "THES",
+            "report": "RPRT",
+            "webpage": "ELEC",
+            "magazineArticle": "MGZN",
+            "newspaperArticle": "JOUR",
+            "film": "MPCT",
+            "videoRecording": "VIDEO",
+            "map": "MAP",
+            "blogPost": "ELEC",
+            "encyclopediaArticle": "JOUR",
+            "conferencePaper": "JOUR",
         }
 
-        if self.cite['doc_type'] in z_to_r:
-            self.cite['doc_type'] = z_to_r[self.cite['doc_type']]
+        if self.cite["doc_type"] in z_to_r:
+            self.cite["doc_type"] = z_to_r[self.cite["doc_type"]]
 
     def map_pages(self):
         "Map start/end pages"
 
-        if self.cite['start_page'] is not None and '-' in self.cite['start_page']:
-            self.cite['start_page'], self.cite['end_page'] = self.cite['start_page'].split('-', maxsplit=1)
+        if self.cite["start_page"] is not None and "-" in self.cite["start_page"]:
+            self.cite["start_page"], self.cite["end_page"] = self.cite[
+                "start_page"
+            ].split("-", maxsplit=1)
         # emdashes - really
-        if self.cite['start_page'] is not None and '–' in self.cite['start_page']:
-            self.cite['start_page'], self.cite['end_page'] = self.cite['start_page'].split('–', maxsplit=1)
+        if self.cite["start_page"] is not None and "–" in self.cite["start_page"]:
+            self.cite["start_page"], self.cite["end_page"] = self.cite[
+                "start_page"
+            ].split("–", maxsplit=1)
 
     def parse_tags(self, item):
         "Parse out keywords for the item"
 
-        for t in item['data']['tags']:
-            self.keywords.append(t['tag'])
+        for t in item["data"]["tags"]:
+            self.keywords.append(t["tag"])
 
     def parse_notes(self, item):
         "Parse out notes for the item"
 
-        self.notes.append({item['data']['key']: item['data']['note']})
+        self.notes.append({item["data"]["key"]: item["data"]["note"]})
 
     def authorship(self, item):
         "Parse out different types of authors"
 
-        for a in item['data']['creators']:
-            #print("\t%s" % (json.dumps(a)))
-            if 'firstName' in a:
-                self.authors.append({'creator': a['creatorType'], 'name': "%s, %s" % (a['lastName'], a['firstName']), 'first_name': a['firstName'], 'last_name': a['lastName']})
+        for a in item["data"]["creators"]:
+            # print("\t%s" % (json.dumps(a)))
+            if "firstName" in a:
+                self.authors.append(
+                    {
+                        "creator": a["creatorType"],
+                        "name": "%s, %s" % (a["lastName"], a["firstName"]),
+                        "first_name": a["firstName"],
+                        "last_name": a["lastName"],
+                    }
+                )
             else:
-                self.authors.append({'creator': a['creatorType'], 'name': a['name']})
+                self.authors.append({"creator": a["creatorType"], "name": a["name"]})
 
     def insert_citation(self):
         cur = self.conn.cursor()
-        cur.execute("""
+        cur.execute(
+            """
 INSERT INTO citations(abstract, access_date, alternate_title, call_number, doc_type, doi, edition, end_page, id_number, isbn_issn, issue_number, language, pub_database, pub_date, publisher, pub_place, pub_title, short_title, start_page, title, series, url, volume, work_type, zotero_key, source)
 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
-            (self.cite['abstract'], self.cite['access_date'], self.cite['alternate_title'], self.cite['call_number'], self.cite['doc_type'], self.cite['doi'], self.cite['edition'], self.cite['end_page'], self.cite['id_number'], self.cite['isbn_issn'], self.cite['issue_number'], self.cite['language'], self.cite['pub_database'], self.cite['pub_date'], self.cite['publisher'], self.cite['pub_place'], self.cite['pub_title'], self.cite['short_title'], self.cite['start_page'], self.cite['title'], self.cite['series'], self.cite['url'], self.cite['volume'], self.cite['work_type'], self.cite['zotero_key'], self.cite['source'])
+            (
+                self.cite["abstract"],
+                self.cite["access_date"],
+                self.cite["alternate_title"],
+                self.cite["call_number"],
+                self.cite["doc_type"],
+                self.cite["doi"],
+                self.cite["edition"],
+                self.cite["end_page"],
+                self.cite["id_number"],
+                self.cite["isbn_issn"],
+                self.cite["issue_number"],
+                self.cite["language"],
+                self.cite["pub_database"],
+                self.cite["pub_date"],
+                self.cite["publisher"],
+                self.cite["pub_place"],
+                self.cite["pub_title"],
+                self.cite["short_title"],
+                self.cite["start_page"],
+                self.cite["title"],
+                self.cite["series"],
+                self.cite["url"],
+                self.cite["volume"],
+                self.cite["work_type"],
+                self.cite["zotero_key"],
+                self.cite["source"],
+            ),
         )
         self.conn.commit()
         cur.close()
 
     def update_citation(self):
 
-        if 'title' not in self.cite or self.cite['title'] is None:
-            print(self.cite['zotero_key'])
+        if "title" not in self.cite or self.cite["title"] is None:
+            print(self.cite["zotero_key"])
             return False
 
         cur = self.conn.cursor()
 
         # Start with checking for the Zotero key
-        if self.cite['zotero_key'] is not None:
-            cur.execute("SELECT id FROM citations WHERE zotero_key = %s", (self.cite['zotero_key'],))
+        if self.cite["zotero_key"] is not None:
+            cur.execute(
+                "SELECT id FROM citations WHERE zotero_key = %s",
+                (self.cite["zotero_key"],),
+            )
             res = cur.fetchone()
 
         if cur.rowcount != 1:
-            cur.execute(r"""
+            cur.execute(
+                r"""
                 SELECT id FROM citations WHERE (lower(translate(title, '[]:. ', '')) = %s OR regexp_replace(title, E' // Review', E'') = %s) AND doc_type = %s AND (start_page = %s OR start_page IS NULL) AND zotero_key IS NULL
-            """, (self.cite['title'].translate(str.maketrans('', '', '[]:. ')).lower(), self.cite['title'], self.cite['doc_type'], self.cite['start_page']))
+            """,
+                (
+                    self.cite["title"]
+                    .translate(str.maketrans("", "", "[]:. "))
+                    .lower(),
+                    self.cite["title"],
+                    self.cite["doc_type"],
+                    self.cite["start_page"],
+                ),
+            )
 
             res = cur.fetchone()
             # If two match, then we'll be picking the first one
@@ -279,8 +334,37 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
                 cur.close()
                 return False
 
-        cur.execute("UPDATE citations SET abstract= %s, access_date= %s, alternate_title= %s, call_number= %s, doc_type= %s, doi= %s, edition= %s, end_page = %s, id_number= %s, isbn_issn= %s, issue_number= %s, language= %s, pub_database= %s, pub_date= %s, pub_title= %s, publisher= %s, pub_place= %s, short_title= %s, start_page= %s, title= %s, series= %s, url= %s, volume= %s, work_type= %s, zotero_key= %s, source = %s WHERE id = %s",
-            (self.cite['abstract'], self.cite['access_date'], self.cite['alternate_title'], self.cite['call_number'], self.cite['doc_type'], self.cite['doi'], self.cite['edition'], self.cite['end_page'], self.cite['id_number'], self.cite['isbn_issn'], self.cite['issue_number'], self.cite['language'], self.cite['pub_database'], self.cite['pub_date'], self.cite['pub_title'], self.cite['publisher'], self.cite['pub_place'], self.cite['short_title'], self.cite['start_page'], self.cite['title'], self.cite['series'], self.cite['url'], self.cite['volume'], self.cite['work_type'], self.cite['zotero_key'], self.cite['source'], res[0])
+        cur.execute(
+            "UPDATE citations SET abstract= %s, access_date= %s, alternate_title= %s, call_number= %s, doc_type= %s, doi= %s, edition= %s, end_page = %s, id_number= %s, isbn_issn= %s, issue_number= %s, language= %s, pub_database= %s, pub_date= %s, pub_title= %s, publisher= %s, pub_place= %s, short_title= %s, start_page= %s, title= %s, series= %s, url= %s, volume= %s, work_type= %s, zotero_key= %s, source = %s WHERE id = %s",
+            (
+                self.cite["abstract"],
+                self.cite["access_date"],
+                self.cite["alternate_title"],
+                self.cite["call_number"],
+                self.cite["doc_type"],
+                self.cite["doi"],
+                self.cite["edition"],
+                self.cite["end_page"],
+                self.cite["id_number"],
+                self.cite["isbn_issn"],
+                self.cite["issue_number"],
+                self.cite["language"],
+                self.cite["pub_database"],
+                self.cite["pub_date"],
+                self.cite["pub_title"],
+                self.cite["publisher"],
+                self.cite["pub_place"],
+                self.cite["short_title"],
+                self.cite["start_page"],
+                self.cite["title"],
+                self.cite["series"],
+                self.cite["url"],
+                self.cite["volume"],
+                self.cite["work_type"],
+                self.cite["zotero_key"],
+                self.cite["source"],
+                res[0],
+            ),
         )
 
         self.conn.commit()
@@ -290,17 +374,32 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
     def insert_authors(self):
         cur = self.conn.cursor()
         for author in self.authors:
-            if 'last_name' in author:
-                cur.execute("INSERT INTO zotero_cites_to_authors(zotero_key, author_type, name, last_name, first_name) VALUES (%s, %s, %s, %s, %s)", (self.cite['zotero_key'], author['creator'], author['name'], author['last_name'], author['first_name']))
+            if "last_name" in author:
+                cur.execute(
+                    "INSERT INTO zotero_cites_to_authors(zotero_key, author_type, name, last_name, first_name) VALUES (%s, %s, %s, %s, %s)",
+                    (
+                        self.cite["zotero_key"],
+                        author["creator"],
+                        author["name"],
+                        author["last_name"],
+                        author["first_name"],
+                    ),
+                )
             else:
-                cur.execute("INSERT INTO zotero_cites_to_authors(zotero_key, author_type, name) VALUES (%s, %s, %s)", (self.cite['zotero_key'], author['creator'], author['name']))
+                cur.execute(
+                    "INSERT INTO zotero_cites_to_authors(zotero_key, author_type, name) VALUES (%s, %s, %s)",
+                    (self.cite["zotero_key"], author["creator"], author["name"]),
+                )
         self.conn.commit()
         cur.close()
 
     def insert_keywords(self):
         cur = self.conn.cursor()
         for kw in self.keywords:
-            cur.execute("INSERT INTO zotero_keywords(zotero_key, keywords) VALUES (%s, %s)", (self.cite['zotero_key'], kw))
+            cur.execute(
+                "INSERT INTO zotero_keywords(zotero_key, keywords) VALUES (%s, %s)",
+                (self.cite["zotero_key"], kw),
+            )
         self.conn.commit()
         cur.close()
 
@@ -315,11 +414,12 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
 
         try:
             self.conn = psycopg2.connect(
-                database=self.config['database']['dbname'],
-                user=self.config['database']['dbuser']
+                database=self.config["database"]["dbname"],
+                user=self.config["database"]["dbuser"],
             )
         except Exception as e:
             print(e)
+
 
 def get_db(config):
     """
@@ -332,13 +432,13 @@ def get_db(config):
 
     try:
         conn = psycopg2.connect(
-            database=config['database']['dbname'],
-            user=config['database']['dbuser']
+            database=config["database"]["dbname"], user=config["database"]["dbuser"]
         )
     except Exception as e:
         print(e)
 
     return conn
+
 
 def prep_db(config):
     "Extend the database to support richer Zotero API data"
@@ -741,7 +841,9 @@ def prep_db(config):
     # This will enable us to insert the new citations, as well as a new
     # zotero_cites_to_authors table:
 
-    stmts.append("CREATE TABLE zotero_cites_to_authors (zotero_key TEXT, author_type TEXT, name TEXT, first_name TEXT, last_name TEXT, author_id INT);")
+    stmts.append(
+        "CREATE TABLE zotero_cites_to_authors (zotero_key TEXT, author_type TEXT, name TEXT, first_name TEXT, last_name TEXT, author_id INT);"
+    )
 
     # Then we'll be able to normalize the authors with the existing authors table
     # (updating author_id), then map the authors to citations by ID in the
@@ -750,10 +852,14 @@ def prep_db(config):
     # We also want to automatically assign IDs for the new citations (6533 is the latest):
     stmts.append("CREATE SEQUENCE citations_id_seq;")
     stmts.append("SELECT SETVAL('citations_id_seq', MAX(id) + 1) FROM citations;")
-    stmts.append("ALTER TABLE citations ALTER COLUMN id SET DEFAULT nextval('citations_id_seq');")
+    stmts.append(
+        "ALTER TABLE citations ALTER COLUMN id SET DEFAULT nextval('citations_id_seq');"
+    )
 
     # Prevent duplicate author/citation rows from new citations
-    stmts.append("ALTER TABLE cites_to_authors ADD CONSTRAINT unique_cites_to_authors UNIQUE (citation, author_type, author);")
+    stmts.append(
+        "ALTER TABLE cites_to_authors ADD CONSTRAINT unique_cites_to_authors UNIQUE (citation, author_type, author);"
+    )
 
     # Store our keywords
     stmts.append("CREATE TABLE zotero_keywords(zotero_key TEXT, keywords TEXT)")
@@ -764,6 +870,7 @@ def prep_db(config):
         cur.execute(stmt)
     conn.commit()
     cur.close()
+
 
 def post_process(config, notes):
 
@@ -851,11 +958,15 @@ def post_process(config, notes):
             cur.execute(stmt)
         conn.commit()
         for note in notes:
-            cur.execute("INSERT INTO citation_notes(citation, notes) VALUES (%s, %s)", (note[0], note[1]))
+            cur.execute(
+                "INSERT INTO citation_notes(citation, notes) VALUES (%s, %s)",
+                (note[0], note[1]),
+            )
         conn.commit()
         cur.close()
     except Exception as e:
         print(e)
+
 
 def main():
     "Integrate the latest updates to the database"
@@ -865,41 +976,43 @@ def main():
     notes = []
 
     config = configparser.ConfigParser()
-    config.read(abspath(dirname(__file__)) + '/config.ini')
+    config.read(abspath(dirname(__file__)) + "/config.ini")
     if write_updates:
-        f = open('updates.json', 'w')
+        f = open("updates.json", "w")
 
     try:
         prep_db(config)
     except Exception as e:
         print(e)
 
-    stop_date = datetime.datetime.strptime(config['zotero']['stop_date'], "%Y-%m-%d")
+    stop_date = datetime.datetime.strptime(config["zotero"]["stop_date"], "%Y-%m-%d")
 
     # Access our group
-    zot = zotero.Zotero(config['zotero']['group'], 'group', config['zotero']['key'])
+    zot = zotero.Zotero(config["zotero"]["group"], "group", config["zotero"]["key"])
 
     # list_collections(zot)
     if read_updates and not write_updates:
-        f = open('updates.json', 'r')
+        f = open("updates.json", "r")
         items = json.load(f)
     else:
-        items = zot.items(sort='dateModified', direction='desc', limit=100)
+        items = zot.items(sort="dateModified", direction="desc", limit=100)
     # items = [zot.item('JC94RN9H')]
-#    import requests
-#    r = requests.get('https://api.zotero.org/groups/290262/items/2P9NSQ9M')
-#    items = []
-#    items.append(r.json())
+    #    import requests
+    #    r = requests.get('https://api.zotero.org/groups/290262/items/2P9NSQ9M')
+    #    items = []
+    #    items.append(r.json())
 
     mod_date = datetime.datetime.now()
     while items and stop_date < mod_date:
         for i in items:
             if write_updates:
                 f.write(json.dumps(i, sort_keys=True, indent=4))
-            #print("%s %s" % (i['key'], i['data']['dateModified']))
-            if i['data']['itemType'] == 'attachment':
+            # print("%s %s" % (i['key'], i['data']['dateModified']))
+            if i["data"]["itemType"] == "attachment":
                 continue
-            mod_date = datetime.datetime.strptime(i['data']['dateModified'], '%Y-%m-%dT%H:%M:%SZ')
+            mod_date = datetime.datetime.strptime(
+                i["data"]["dateModified"], "%Y-%m-%dT%H:%M:%SZ"
+            )
             if stop_date > mod_date:
                 continue
             process_item(i, config, notes)
@@ -913,6 +1026,7 @@ def main():
     except Exception as e:
         print(e)
 
+
 def process_item(i, config, notes):
     "Parse the item data and get it into the database"
 
@@ -920,9 +1034,10 @@ def process_item(i, config, notes):
 
     z.insert_authors()
     z.insert_keywords()
-    if 'zotero_key' in z.cite and z.update_citation() is False:
+    if "zotero_key" in z.cite and z.update_citation() is False:
         z.insert_citation()
     z.conn.close()
+
 
 def list_collections(zot):
     "We have a lot of collections"
@@ -942,5 +1057,5 @@ def list_collections(zot):
     print(x)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
