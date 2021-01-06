@@ -895,7 +895,7 @@ def post_process(config, notes):
             SET title2 = 'Socialist Studies / Études socialistes'
             WHERE title2 IN ('Socialist Studies/Études socialistes');""",
         r"""UPDATE citations SET language = 'English'
-            WHERE language IN ('eng', 'en', 'en_ca', 'en-GB');""",
+            WHERE language IN ('eng', 'en', 'en_ca', 'en-GB', 'en-US', 'EN', 'en-CA');""",
         r"""UPDATE citations SET language = 'English'
             WHERE language IS NULL;""",
         r"""UPDATE citations SET language = 'French'
